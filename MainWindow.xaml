@@ -1,0 +1,467 @@
+﻿<Window x:Class="HealthSync.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HealthSync — Дневник здоровья" 
+        Height="800" 
+        Width="1100"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="80"/>
+        </Grid.RowDefinitions>
+
+        <!-- Верхняя панель -->
+        <Border Grid.Row="0" Grid.ColumnSpan="3" Background="#1A237E">
+            <Grid Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="HealthSync" Foreground="White" FontSize="20" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="1" Foreground="#BBDEFB" 
+                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock.Inlines>
+                        <Run Text="Сегодня · "/>
+                        <Run x:Name="CurrentDateText" Text="16 февраля 2026"/>
+                    </TextBlock.Inlines>
+                </TextBlock>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Border Background="#303F9F" CornerRadius="15" Padding="10,5">
+                        <TextBlock x:Name="HeaderSyncCoinText" Text="150" Foreground="White" FontSize="14"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ЛЕВАЯ ПАНЕЛЬ: Показатели -->
+        <Border Grid.Row="1" Grid.Column="0" Background="White" Margin="10,10,5,10" CornerRadius="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="15">
+
+                    <!-- ПРОФИЛЬ -->
+                    <Border Background="#F5F5F5" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="ЛИЧНЫЕ ДАННЫЕ" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Рост -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Рост" FontSize="12" Foreground="#666"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="HeightText" Text="178" FontSize="18" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text=" см" FontSize="12" Foreground="#666" 
+                                                   VerticalAlignment="Bottom" Margin="2,0,0,2"/>
+                                    </Grid>
+                                    <Button x:Name="EditHeightButton" Content="✏️" Width="30" Height="25" 
+                                            FontSize="12" Margin="0,5,0,0" Click="EditHeight_Click"/>
+                                </StackPanel>
+
+                                <!-- Вес -->
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Вес" FontSize="12" Foreground="#666"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="WeightText" Text="72.5" FontSize="18" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text=" кг" FontSize="12" Foreground="#666" 
+                                                   VerticalAlignment="Bottom" Margin="2,0,0,2"/>
+                                    </Grid>
+                                    <Button x:Name="EditWeightButton" Content="✏️" Width="30" Height="25" 
+                                            FontSize="12" Margin="0,5,0,0" Click="EditWeight_Click"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- ИМТ с анализом -->
+                            <Grid Margin="0,15,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="ИМТ:" FontSize="14" Foreground="#666" Margin="0,0,10,0"/>
+                                <TextBlock x:Name="BMIText" Text="22.9" FontSize="20" FontWeight="Bold" 
+                                           Foreground="#4CAF50" MouseDown="BMIText_MouseDown"
+                                           Cursor="Hand" TextDecorations="Underline"/>
+                            </Grid>
+                            <TextBlock x:Name="BMICategoryText" Text="Нормальный вес ✅" 
+                                       FontSize="12" Foreground="#4CAF50"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- СЕРДЦЕ -->
+                    <Border Background="#F5F5F5" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="СЕРДЦЕ" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Пульс -->
+                                <StackPanel>
+                                    <TextBlock Text="❤️ Пульс" FontSize="12" Foreground="#666"/>
+                                    <TextBlock x:Name="HeartRateText" Text="68" FontSize="24" FontWeight="Bold"/>
+                                    <TextBlock Text="уд/мин" FontSize="11" Foreground="#666"/>
+                                </StackPanel>
+
+                                <!-- Давление -->
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="🫀 Давление" FontSize="12" Foreground="#666"/>
+                                    <TextBlock x:Name="BloodPressureText" Text="118/75" FontSize="20" FontWeight="Bold" 
+                                               Cursor="Hand" MouseDown="BloodPressureText_MouseDown"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Button x:Name="AddVitalsButton" Content="➕ Добавить измерение" Background="#E8EAF6" 
+                                    Foreground="#1A237E" Margin="0,10,0,0" Height="30" Click="AddVitals_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- СОН -->
+                    <Border Background="#F5F5F5" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="СОН" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="SleepHoursText" Text="7.5" FontSize="24" FontWeight="Bold"/>
+                                    <TextBlock Text="часов" FontSize="11" Foreground="#666"/>
+                                </StackPanel>
+
+                                <Border Grid.Column="1" Background="#E1F5FE" CornerRadius="15" Width="50" Height="50">
+                                    <TextBlock x:Name="SleepScoreText" Text="82" FontSize="18" FontWeight="Bold" 
+                                               Foreground="#0288D1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <Button x:Name="LogSleepButton" Content="😴 Записать сон" Background="#E1F5FE" 
+                                    Foreground="#0277BD" Margin="0,10,0,0" Height="30" Click="LogSleep_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ЦЕНТРАЛЬНАЯ ПАНЕЛЬ: Главная -->
+        <Border Grid.Row="1" Grid.Column="1" Background="White" Margin="5,10,5,10" CornerRadius="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+
+                    <!-- Инсайт дня -->
+                    <Border Background="#E8F5E8" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                        <TextBlock x:Name="DailyInsightText" TextWrapping="Wrap"
+                                   Text="💡 Ваш пульс в норме. Для здоровья сердца старайтесь проходить 8000+ шагов ежедневно."/>
+                    </Border>
+
+                    <!-- Активность за неделю -->
+                    <TextBlock Text="Активность за неделю" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <Border Background="#FAFAFA" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                        <StackPanel>
+                            <UniformGrid x:Name="StepsGraphGrid" Columns="7" Rows="1" Height="120" Margin="0,0,0,5">
+                                <Border Background="#4CAF50" Height="60" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="55" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="75" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="70" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="50" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="90" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                                <Border Background="#4CAF50" Height="85" Width="20" 
+                                        VerticalAlignment="Bottom" HorizontalAlignment="Center" CornerRadius="4,4,0,0"/>
+                            </UniformGrid>
+
+                            <UniformGrid Columns="7" Rows="1">
+                                <TextBlock Text="ПН" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="ВТ" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="СР" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="ЧТ" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="ПТ" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="СБ" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                                <TextBlock Text="ВС" HorizontalAlignment="Center" FontSize="10" Foreground="#999"/>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Быстрый ввод -->
+                    <TextBlock Text="Быстрый ввод" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <UniformGrid Columns="3" Rows="1" Margin="0,0,0,20">
+                        <Button x:Name="QuickStepsButton" Margin="5" Height="80" Background="#FFF3E0" Click="QuickSteps_Click">
+                            <StackPanel>
+                                <TextBlock Text="👣" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Шаги" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="QuickStepsValue" Text="+500" FontSize="14" FontWeight="Bold" Foreground="#FF9800"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="QuickWaterButton" Margin="5" Height="80" Background="#E3F2FD" Click="QuickWater_Click">
+                            <StackPanel>
+                                <TextBlock Text="💧" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Вода" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="QuickWaterValue" Text="+250 мл" FontSize="14" FontWeight="Bold" Foreground="#2196F3"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="QuickPressureButton" Margin="5" Height="80" Background="#FFEBEE" Click="QuickPressure_Click">
+                            <StackPanel>
+                                <TextBlock Text="🫀" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Давление" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Измерить" FontSize="14" FontWeight="Bold" Foreground="#F44336"/>
+                            </StackPanel>
+                        </Button>
+                    </UniformGrid>
+
+                    <!-- Цели на сегодня -->
+                    <TextBlock Text="Цели на сегодня" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <!-- Вода -->
+                    <Border Background="#F5F5F5" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="💧" FontSize="18" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Вода" FontSize="12" FontWeight="Bold"/>
+                                    <TextBlock x:Name="WaterGoalText" Grid.Column="1" Text="1.2/2.5 л" FontSize="11" Foreground="#666"/>
+                                </Grid>
+                                <ProgressBar x:Name="WaterProgressBar" Value="48" Height="4" Maximum="100"
+                                             Foreground="#2196F3" Background="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <Button x:Name="AddWaterButton" Grid.Column="2" Content="+250 мл" 
+                                    Background="#2196F3" Foreground="White" FontSize="10" 
+                                    Height="25" Margin="5,0,0,0" Click="AddWater_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Шаги -->
+                    <Border Background="#F5F5F5" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="👣" FontSize="18" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Шаги" FontSize="12" FontWeight="Bold"/>
+                                    <TextBlock x:Name="StepsGoalText" Grid.Column="1" Text="3,450/10,000" FontSize="11" Foreground="#666"/>
+                                </Grid>
+                                <ProgressBar x:Name="StepsProgressBar" Value="35" Height="4" Maximum="100"
+                                             Foreground="#FF9800" Background="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <Button x:Name="AddStepsButton" Grid.Column="2" Content="+500" 
+                                    Background="#FF9800" Foreground="White" FontSize="10" 
+                                    Height="25" Margin="5,0,0,0" Click="AddSteps_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Сон -->
+                    <Border Background="#F5F5F5" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="😴" FontSize="18" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Сон" FontSize="12" FontWeight="Bold"/>
+                                    <TextBlock x:Name="SleepGoalText" Grid.Column="1" Text="7.5/8 ч" FontSize="11" Foreground="#666"/>
+                                </Grid>
+                                <ProgressBar x:Name="SleepProgressBar" Value="94" Height="4" Maximum="100"
+                                             Foreground="#5C6BC0" Background="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <Button x:Name="AddSleepButton" Grid.Column="2" Content="+1 ч" 
+                                    Background="#5C6BC0" Foreground="White" FontSize="10" 
+                                    Height="25" Margin="5,0,0,0" Click="AddSleep_Click"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ПРАВАЯ ПАНЕЛЬ: Рекомендации -->
+        <Border Grid.Row="1" Grid.Column="2" Background="White" Margin="5,10,10,10" CornerRadius="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="15">
+
+                    <!-- Прогноз -->
+                    <Border Background="#667EEA" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="ПРОГНОЗ" Foreground="#E0E0FF" FontSize="10"/>
+                            <TextBlock x:Name="BioAgeText" Text="Биологический возраст: 32" 
+                                       Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0"/>
+                            <TextBlock Text="(фактический: 28)" Foreground="#E0E0FF" FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Рекомендации -->
+                    <TextBlock Text="РЕКОМЕНДАЦИИ" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
+
+                    <Border Background="#FFF9C4" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="🌅" FontSize="20" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Прогулка" FontSize="12" FontWeight="Bold"/>
+                                <TextBlock Text="Сейчас отличное время для прогулки" 
+                                           FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="#E1F5FE" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="💧" FontSize="20" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Вода" FontSize="12" FontWeight="Bold"/>
+                                <TextBlock Text="Осталось выпить 1.3 л воды" 
+                                           FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- История -->
+                    <TextBlock Text="ИСТОРИЯ" FontSize="11" Foreground="#666" Margin="0,15,0,10"/>
+
+                    <ListBox x:Name="HistoryListBox" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F5F5F5" CornerRadius="6" Padding="8" Margin="0,0,0,5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Icon}" FontSize="16" Grid.Column="0"/>
+                                        <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                            <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Time}" FontSize="10" Foreground="#666"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="Bold" 
+                                                   Foreground="{Binding Color}" Grid.Column="2"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Нижняя панель -->
+        <Border Grid.Row="2" Grid.ColumnSpan="3" Background="White" Margin="10,0,10,10" 
+                CornerRadius="10" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="👣" FontSize="20" Margin="0,0,5,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Шаги" FontSize="10" Foreground="#666"/>
+                        <TextBlock x:Name="FooterStepsText" Text="3,450" FontSize="14" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="🔥" FontSize="20" Margin="0,0,5,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Калории" FontSize="10" Foreground="#666"/>
+                        <TextBlock x:Name="FooterCaloriesText" Text="1,240" FontSize="14" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="💧" FontSize="20" Margin="0,0,5,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Вода" FontSize="10" Foreground="#666"/>
+                        <TextBlock x:Name="FooterWaterText" Text="1.2 л" FontSize="14" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="😴" FontSize="20" Margin="0,0,5,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Сон" FontSize="10" Foreground="#666"/>
+                        <TextBlock x:Name="FooterSleepText" Text="7.5 ч" FontSize="14" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
