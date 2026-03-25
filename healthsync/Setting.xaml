@@ -4,19 +4,113 @@
       Title="SettingsPage"
       Background="#F5F5F5">
 
-    <StackPanel Margin="30">
-        <Border Background="White" CornerRadius="10" Padding="20">
-            <StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Width="700" Background="White" CornerRadius="10"
+                HorizontalAlignment="Center" Margin="30">
+            <StackPanel Margin="30">
                 <TextBlock Text="⚙️ Настройки" FontSize="24" FontWeight="Bold" 
-                          Foreground="#1A237E" Margin="0,0,0,20"/>
+                          Foreground="#1A237E" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-                <TextBlock Text="Настройки будут доступны в следующей версии" 
-                          Margin="0,20" Foreground="#666"/>
+                <!-- Цели -->
+                <TextBlock Text="🎯 ЦЕЛИ" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,15,0,10"/>
 
-                <Button x:Name="BackButton" Content="← На главную" 
-                        Background="#1A237E" Foreground="White"
-                        Height="40" Margin="0,20" Click="BackButton_Click"/>
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Шаги в день:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="StepsGoalBox" Grid.Column="1" Padding="8" Margin="10,0"/>
+                    <TextBlock Grid.Column="2" Text="шагов" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Вода в день:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="WaterGoalBox" Grid.Column="1" Padding="8" Margin="10,0"/>
+                    <TextBlock Grid.Column="2" Text="литров" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Сон в день:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="SleepGoalBox" Grid.Column="1" Padding="8" Margin="10,0"/>
+                    <TextBlock Grid.Column="2" Text="часов" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Уведомления -->
+                <TextBlock Text="🔔 УВЕДОМЛЕНИЯ" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,20,0,10"/>
+
+                <CheckBox x:Name="NotificationsCheckBox" Content="Включить уведомления" Margin="0,5"/>
+                <CheckBox x:Name="DailyReminderCheckBox" Content="Ежедневное напоминание" Margin="0,5"/>
+
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Время напоминания:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="ReminderTimeBox" Grid.Column="1" Margin="10,0" Width="120" Text="20:00" HorizontalAlignment="Left"/>
+                </Grid>
+
+                <!-- Единицы измерения -->
+                <TextBlock Text="📏 ЕДИНИЦЫ ИЗМЕРЕНИЯ" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,20,0,10"/>
+
+                <ComboBox x:Name="UnitsSystemBox" Margin="0,5" Width="200" HorizontalAlignment="Left">
+                    <ComboBoxItem Content="Метрическая (кг, см)" IsSelected="True"/>
+                    <ComboBoxItem Content="Имперская (фунты, дюймы)"/>
+                </ComboBox>
+
+                <!-- Тема -->
+                <TextBlock Text="🎨 ОФОРМЛЕНИЕ" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,20,0,10"/>
+
+                <ComboBox x:Name="ThemeBox" Margin="0,5" Width="200" HorizontalAlignment="Left">
+                    <ComboBoxItem Content="Светлая тема" IsSelected="True"/>
+                    <ComboBoxItem Content="Темная тема"/>
+                </ComboBox>
+
+                <!-- Синхронизация -->
+                <TextBlock Text="🔄 СИНХРОНИЗАЦИЯ" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,20,0,10"/>
+
+                <CheckBox x:Name="AutoSyncCheckBox" Content="Автоматическая синхронизация" Margin="0,5"/>
+
+                <!-- Кнопки действий -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <Button x:Name="SaveButton" Content="💾 Сохранить настройки" 
+                            Background="#1A237E" Foreground="White"
+                            Width="150" Height="40" Margin="5" Click="SaveButton_Click"/>
+
+                    <Button x:Name="ResetButton" Content="🔄 Сбросить" 
+                            Background="#FF9800" Foreground="White"
+                            Width="150" Height="40" Margin="5" Click="ResetButton_Click"/>
+
+                    <Button x:Name="BackButton" Content="← На главную" 
+                            Background="#4CAF50" Foreground="White"
+                            Width="150" Height="40" Margin="5" Click="BackButton_Click"/>
+                </StackPanel>
+
+                <Button x:Name="LogoutButton" Content="🚪 Выйти из аккаунта" 
+                        Background="#F44336" Foreground="White"
+                        Height="40" Margin="0,20" Click="LogoutButton_Click"/>
             </StackPanel>
         </Border>
-    </StackPanel>
+    </ScrollViewer>
 </Page>

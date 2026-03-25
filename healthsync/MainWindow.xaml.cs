@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Input;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace HealthSync
 {
@@ -15,23 +14,23 @@ namespace HealthSync
         public User CurrentUser { get; set; }
 
         // Основные показатели
-        private int syncCoins = 150;
-        private double weight = 72.5;
-        private double height = 178; // в см
+        public int syncCoins = 150;
+        public double weight = 72.5;
+        public double height = 178; // в см
 
         // Пульс и давление
-        private int heartRate = 68;
-        private int systolic = 118;
-        private int diastolic = 75;
+        public int heartRate = 68;
+        public int systolic = 118;
+        public int diastolic = 75;
 
         // Дневные метрики - с нуля
-        private int steps = 0;
-        private int stepsGoal = 10000;
-        private double water = 0;
-        private double waterGoal = 2.5;
-        private double sleep = 0;
-        private double sleepGoal = 8.0;
-        private int calories = 0;
+        public int steps = 0;
+        public int stepsGoal = 10000;
+        public double water = 0;
+        public double waterGoal = 2.5;
+        public double sleep = 0;
+        public double sleepGoal = 8.0;
+        public int calories = 0;
 
         // История для графика
         private int[] weekSteps = { 4200, 3800, 5100, 4700, 3450, 6200, 5800 };
@@ -41,36 +40,31 @@ namespace HealthSync
         // Флаги для предотвращения двойного нажатия
         private bool isStepsClicked = false;
         private bool isWaterClicked = false;
+        private bool isSleepClicked = false;
+        private bool isPressureClicked = false;
+        private bool isLogSleepClicked = false;
+        private bool isAddVitalsClicked = false;
+        private bool isEditWeightClicked = false;
+        private bool isEditHeightClicked = false;
+        private bool isWaterGoalClicked = false;
+        private bool isStepsGoalClicked = false;
+        private bool isSleepGoalClicked = false;
 
-        // API сервис - ЗАКОММЕНТИРОВАНО
-        // private ApiService _apiService;
-        // private int _userId = 1;
-
+        // КОНСТРУКТОР MainWindow - вызывается при запуске приложения
         public MainWindow()
         {
             InitializeComponent();
             Instance = this;
-            CurrentUser = new User
-            {
-                Username = "Пользователь",
-                Email = "user@example.com",
-                Age = 28,
-                Height = 178,
-                Weight = 72.5,
-                SyncCoins = 150
-            };
 
-            // Инициализация API - ЗАКОММЕНТИРОВАНО
-            // _apiService = new ApiService();
+            // Создаем дефолтного пользователя если нет пользователей
+            UserManager.CreateDefaultUserIfNeeded();
+
+            // Скрываем основной контент и показываем страницу входа
+            MainContent.Visibility = Visibility.Collapsed;
+            MainFrame.Visibility = Visibility.Visible;
+            MainFrame.Navigate(new LoginPage());
 
             InitializeData();
-
-            // Асинхронная загрузка данных с сервера - ЗАКОММЕНТИРОВАНО
-            // _ = LoadDataFromServerAsync();
-
-            UpdateUI();
-            LoadHistory();
-            UpdateGraph();
         }
 
         private void InitializeData()
@@ -103,48 +97,44 @@ namespace HealthSync
             BloodPressureText.MouseDown += BloodPressureText_MouseDown;
         }
 
-        // Метод загрузки с сервера - ЗАКОММЕНТИРОВАНО
-        /*
-        private async Task LoadDataFromServerAsync()
+        public void LoadUserData()
         {
-            try
+            if (CurrentUser != null)
             {
-                var metrics = await _apiService.GetTodayMetricsAsync(_userId);
-                
-                if (metrics != null)
-                {
-                    steps = metrics.steps;
-                    water = metrics.water;
-                    sleep = metrics.sleep;
-                    calories = metrics.calories;
-                    
-                    if (metrics.heart_rate > 0)
-                        heartRate = metrics.heart_rate;
-                    if (metrics.systolic > 0)
-                        systolic = metrics.systolic;
-                    if (metrics.diastolic > 0)
-                        diastolic = metrics.diastolic;
-                }
-                
-                int serverBalance = await _apiService.GetSyncCoinBalanceAsync(_userId);
-                if (serverBalance > 0)
-                {
-                    syncCoins = serverBalance;
-                }
-                
-                Dispatcher.Invoke(() => UpdateUI());
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки с сервера: {ex.Message}");
-                Dispatcher.Invoke(() => 
-                    ShowNotification("⚠️ Не удалось подключиться к серверу. Используются локальные данные."));
+                stepsGoal = CurrentUser.StepsGoal;
+                waterGoal = CurrentUser.WaterGoal;
+                sleepGoal = CurrentUser.SleepGoal;
+                syncCoins = CurrentUser.SyncCoins;
+                height = CurrentUser.Height;
+                weight = CurrentUser.Weight;
+                heartRate = CurrentUser.HeartRate;
+                systolic = CurrentUser.Systolic;
+                diastolic = CurrentUser.Diastolic;
+                steps = CurrentUser.Steps;
+                water = CurrentUser.Water;
+                sleep = CurrentUser.Sleep;
+                calories = CurrentUser.Calories;
+
+                UpdateUI();
+                LoadHistory();
+                UpdateGraph();
+                ApplyTheme(CurrentUser.Theme);
             }
         }
-        */
 
-        private void UpdateUI()
+        public void UpdateUI()
         {
+            // Если есть пользователь, используем его настройки
+            if (CurrentUser != null)
+            {
+                stepsGoal = CurrentUser.StepsGoal;
+                waterGoal = CurrentUser.WaterGoal;
+                sleepGoal = CurrentUser.SleepGoal;
+                syncCoins = CurrentUser.SyncCoins;
+                height = CurrentUser.Height;
+                weight = CurrentUser.Weight;
+            }
+
             // SyncCoin
             HeaderSyncCoinText.Text = syncCoins.ToString();
 
@@ -180,16 +170,12 @@ namespace HealthSync
             // Сердце
             HeartRateText.Text = heartRate.ToString();
             BloodPressureText.Text = $"{systolic}/{diastolic}";
-
-            // Меняем цвет давления в зависимости от показаний
             UpdatePressureColor();
 
             // Сон
             SleepHoursText.Text = sleep.ToString("F1");
             int sleepScore = CalculateSleepScore();
             SleepScoreText.Text = sleepScore.ToString();
-
-            // Меняем цвет сна в зависимости от качества
             UpdateSleepColor();
 
             // Цели - отображаем текущие значения
@@ -218,29 +204,29 @@ namespace HealthSync
         private void UpdatePressureColor()
         {
             if (systolic < 90)
-                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Оранжевый
+                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
             else if (systolic < 120)
-                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Зеленый
+                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
             else if (systolic < 130)
-                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Зеленый
+                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
             else if (systolic < 140)
-                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Оранжевый
+                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
             else
-                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Красный
+                BloodPressureText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
         }
 
         private void UpdateSleepColor()
         {
             if (sleep == 0)
-                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(156, 156, 156)); // Серый
+                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(156, 156, 156));
             else if (sleep >= 7 && sleep <= 8)
-                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Зеленый
+                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
             else if (sleep >= 6 && sleep < 7)
-                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // Синий
+                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243));
             else if (sleep > 8)
-                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Оранжевый
+                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
             else
-                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Красный
+                SleepHoursText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
         }
 
         private int CalculateSleepScore()
@@ -341,54 +327,129 @@ namespace HealthSync
             HistoryListBox.ItemsSource = history;
         }
 
-        public void ShowNotification(string message, bool isSuccess = true)
+        public void ShowNotification(string message, string title = "Информация")
         {
-            MessageBox.Show(message, isSuccess ? "Успешно" : "Информация",
-                          MessageBoxButton.OK, isSuccess ? MessageBoxImage.Information : MessageBoxImage.Information);
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        public bool ShowConfirmation(string message)
+        {
+            return MessageBox.Show(message, "Подтверждение",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        }
+
+        public void ApplyTheme(string theme)
+        {
+            if (theme == "Dark")
+            {
+                this.Background = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+                MainContent.Background = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+            }
+            else
+            {
+                this.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245));
+                MainContent.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245));
+            }
+        }
+
+        public void SaveCurrentUser()
+        {
+            if (CurrentUser != null)
+            {
+                // Обновляем данные пользователя из текущих показателей
+                CurrentUser.StepsGoal = stepsGoal;
+                CurrentUser.WaterGoal = waterGoal;
+                CurrentUser.SleepGoal = sleepGoal;
+                CurrentUser.SyncCoins = syncCoins;
+                CurrentUser.Height = height;
+                CurrentUser.Weight = weight;
+                CurrentUser.HeartRate = heartRate;
+                CurrentUser.Systolic = systolic;
+                CurrentUser.Diastolic = diastolic;
+                CurrentUser.Steps = steps;
+                CurrentUser.Water = water;
+                CurrentUser.Sleep = sleep;
+                CurrentUser.Calories = calories;
+
+                UserManager.UpdateUser(CurrentUser);
+            }
         }
 
         // Настройка целей по клику
-        private void WaterGoalText_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void WaterGoalText_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (isWaterGoalClicked) return;
+            isWaterGoalClicked = true;
+
             string input = Microsoft.VisualBasic.Interaction.InputBox("Введите вашу цель по воде (в литрах):",
                 "Настройка цели", waterGoal.ToString("F1"));
 
             if (double.TryParse(input, out double newGoal) && newGoal > 0 && newGoal < 10)
             {
                 waterGoal = newGoal;
+                if (CurrentUser != null) CurrentUser.WaterGoal = newGoal;
                 UpdateUI();
-                ShowNotification("💧 Цель по воде обновлена!");
+                ShowNotification($"💧 Цель по воде обновлена: {waterGoal:F1} л", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректную цель (0-10 л)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isWaterGoalClicked = false;
         }
 
-        private void StepsGoalText_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void StepsGoalText_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (isStepsGoalClicked) return;
+            isStepsGoalClicked = true;
+
             string input = Microsoft.VisualBasic.Interaction.InputBox("Введите вашу цель по шагам:",
                 "Настройка цели", stepsGoal.ToString());
 
             if (int.TryParse(input, out int newGoal) && newGoal > 0 && newGoal < 50000)
             {
                 stepsGoal = newGoal;
+                if (CurrentUser != null) CurrentUser.StepsGoal = newGoal;
                 UpdateUI();
-                ShowNotification("👣 Цель по шагам обновлена!");
+                ShowNotification($"👣 Цель по шагам обновлена: {stepsGoal:N0} шагов", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректную цель (0-50000 шагов)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isStepsGoalClicked = false;
         }
 
-        private void SleepGoalText_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void SleepGoalText_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (isSleepGoalClicked) return;
+            isSleepGoalClicked = true;
+
             string input = Microsoft.VisualBasic.Interaction.InputBox("Введите вашу цель по сну (в часах):",
                 "Настройка цели", sleepGoal.ToString("F1"));
 
             if (double.TryParse(input, out double newGoal) && newGoal > 0 && newGoal < 24)
             {
                 sleepGoal = newGoal;
+                if (CurrentUser != null) CurrentUser.SleepGoal = newGoal;
                 UpdateUI();
-                ShowNotification("😴 Цель по сну обновлена!");
+                ShowNotification($"😴 Цель по сну обновлена: {sleepGoal:F1} ч", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректную цель (0-24 часа)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isSleepGoalClicked = false;
         }
 
         // Обработчик для клика по ИМТ
-        private void BMIText_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void BMIText_MouseDown(object sender, MouseButtonEventArgs e)
         {
             double bmi = weight / ((height / 100) * (height / 100));
             string message = $"Ваш ИМТ: {bmi:F1}\n\n";
@@ -396,19 +457,21 @@ namespace HealthSync
             message += "РЕКОМЕНДАЦИИ:\n";
 
             if (bmi < 18.5)
-                message += "• Увеличьте калорийность рациона\n• Добавьте белки и полезные жиры";
+                message += "• Увеличьте калорийность рациона\n• Добавьте белки и полезные жиры\n• Пейте больше воды";
             else if (bmi < 25)
-                message += "• Отличный показатель!\n• Продолжайте в том же духе";
+                message += "• Отличный показатель!\n• Продолжайте в том же духе\n• Поддерживайте активный образ жизни";
             else if (bmi < 30)
-                message += "• Увеличьте физическую активность\n• Уменьшите потребление сахара";
+                message += "• Увеличьте физическую активность\n• Уменьшите потребление сахара\n• Добавьте больше овощей";
             else
-                message += "• Обратитесь к врачу\n• Разработайте план снижения веса";
+                message += "• Обратитесь к врачу\n• Разработайте план снижения веса\n• Начните с небольших прогулок";
 
             MessageBox.Show(message, "Анализ ИМТ", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            await Task.Delay(500);
         }
 
         // Обработчик для клика по давлению
-        private void BloodPressureText_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void BloodPressureText_MouseDown(object sender, MouseButtonEventArgs e)
         {
             string message = $"Ваше давление: {systolic}/{diastolic}\n";
             message += $"Пульс: {heartRate} уд/мин\n\n";
@@ -416,49 +479,74 @@ namespace HealthSync
             message += "РЕКОМЕНДАЦИИ:\n";
 
             if (systolic < 90)
-                message += "• Пейте больше воды\n• Ешьте чаще, но меньше\n• Выпейте кофе или чай";
+                message += "• Пейте больше воды\n• Ешьте чаще, но меньше\n• Выпейте кофе или чай\n• Отдохните";
             else if (systolic < 120)
-                message += "• Отличное давление!\n• Продолжайте в том же духе";
+                message += "• Отличное давление!\n• Продолжайте в том же духе\n• Поддерживайте здоровый образ жизни";
             else if (systolic < 130)
-                message += "• Нормальное давление\n• Следите за питанием";
+                message += "• Нормальное давление\n• Следите за питанием\n• Ограничьте соль";
             else if (systolic < 140)
-                message += "• Уменьшите соль\n• Больше двигайтесь\n• Контролируйте вес";
+                message += "• Уменьшите соль\n• Больше двигайтесь\n• Контролируйте вес\n• Избегайте стресса";
             else if (systolic < 160)
-                message += "• Обратитесь к врачу\n• Исключите соль\n• Откажитесь от алкоголя";
+                message += "• Обратитесь к врачу\n• Исключите соль\n• Откажитесь от алкоголя\n• Больше отдыхайте";
             else
-                message += "• СРОЧНО к врачу!\n• Вызовите скорую при ухудшении";
+                message += "• СРОЧНО к врачу!\n• Вызовите скорую при ухудшении\n• Примите прописанные лекарства";
 
             MessageBox.Show(message, "Анализ давления", MessageBoxButton.OK,
                           systolic >= 140 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+
+            await Task.Delay(500);
         }
 
         // Обработчики кнопок
-        private void EditWeight_Click(object sender, RoutedEventArgs e)
+        private async void EditWeight_Click(object sender, RoutedEventArgs e)
         {
+            if (isEditWeightClicked) return;
+            isEditWeightClicked = true;
+
             string input = Microsoft.VisualBasic.Interaction.InputBox("Введите новый вес (кг):", "Изменение веса", weight.ToString("F1"));
             if (double.TryParse(input, out double newWeight) && newWeight > 20 && newWeight < 300)
             {
                 weight = newWeight;
                 if (CurrentUser != null) CurrentUser.Weight = newWeight;
                 UpdateUI();
-                ShowNotification("⚖️ Вес обновлен!");
+                ShowNotification($"⚖️ Вес обновлен: {weight:F1} кг", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректный вес (20-300 кг)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isEditWeightClicked = false;
         }
 
-        private void EditHeight_Click(object sender, RoutedEventArgs e)
+        private async void EditHeight_Click(object sender, RoutedEventArgs e)
         {
+            if (isEditHeightClicked) return;
+            isEditHeightClicked = true;
+
             string input = Microsoft.VisualBasic.Interaction.InputBox("Введите новый рост (см):", "Изменение роста", height.ToString());
             if (double.TryParse(input, out double newHeight) && newHeight > 100 && newHeight < 250)
             {
                 height = newHeight;
                 if (CurrentUser != null) CurrentUser.Height = newHeight;
                 UpdateUI();
-                ShowNotification("📏 Рост обновлен!");
+                ShowNotification($"📏 Рост обновлен: {height} см", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректный рост (100-250 см)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isEditHeightClicked = false;
         }
 
-        private void AddVitals_Click(object sender, RoutedEventArgs e)
+        private async void AddVitals_Click(object sender, RoutedEventArgs e)
         {
+            if (isAddVitalsClicked) return;
+            isAddVitalsClicked = true;
+
             string pulseInput = Microsoft.VisualBasic.Interaction.InputBox("Введите пульс (уд/мин):", "Пульс", heartRate.ToString());
             string bpInput = Microsoft.VisualBasic.Interaction.InputBox("Введите давление (сист/диаст):", "Давление", $"{systolic}/{diastolic}");
 
@@ -476,7 +564,6 @@ namespace HealthSync
                     }
                 }
 
-                // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
                 syncCoins += 5;
                 if (CurrentUser != null) CurrentUser.SyncCoins = syncCoins;
                 UpdateUI();
@@ -489,18 +576,25 @@ namespace HealthSync
                 else if (systolic < 90)
                     recommendation = "\n\nПониженное давление. Пейте больше воды.";
 
-                ShowNotification($"❤️ Показатели сохранены!\nДавление: {systolic}/{diastolic} - {status}{recommendation}\n+5 SyncCoin");
+                ShowNotification($"❤️ Показатели сохранены!\nДавление: {systolic}/{diastolic} - {status}{recommendation}\n+5 SyncCoin", "Успешно");
             }
+
+            await Task.Delay(500);
+            isAddVitalsClicked = false;
         }
 
-        private void LogSleep_Click(object sender, RoutedEventArgs e)
+        private async void LogSleep_Click(object sender, RoutedEventArgs e)
         {
-            string input = Microsoft.VisualBasic.Interaction.InputBox("Сколько часов вы спали?", "Сон", sleep.ToString("F1"));
-            if (double.TryParse(input, out double newSleep) && newSleep > 0 && newSleep < 24)
-            {
-                sleep = newSleep;
+            if (isLogSleepClicked) return;
+            isLogSleepClicked = true;
 
-                // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
+            string input = Microsoft.VisualBasic.Interaction.InputBox("Сколько часов вы спали?",
+                "Запись сна", sleep.ToString("F1"));
+
+            if (double.TryParse(input, out double newSleep) && newSleep > 0 && newSleep <= 24)
+            {
+                sleep = Math.Min(sleepGoal, newSleep);
+
                 syncCoins += 3;
                 if (CurrentUser != null) CurrentUser.SyncCoins = syncCoins;
                 UpdateUI();
@@ -513,17 +607,23 @@ namespace HealthSync
                 else if (sleep > 9)
                     recommendation = "\n\nВозможно, вы слишком много спите. Попробуйте просыпаться раньше.";
 
-                ShowNotification($"😴 Сон записан: {sleep} ч - {description}{recommendation}\n+3 SyncCoin");
+                ShowNotification($"😴 Сон записан: {sleep} ч - {description}{recommendation}\n+3 SyncCoin", "Успешно");
             }
+            else
+            {
+                ShowNotification("Пожалуйста, введите корректное количество часов (1-24)", "Ошибка");
+            }
+
+            await Task.Delay(500);
+            isLogSleepClicked = false;
         }
 
-        // Кнопки быстрого ввода (верхние) - ЛОКАЛЬНАЯ ВЕРСИЯ
+        // Кнопки быстрого ввода (верхние)
         private async void QuickSteps_Click(object sender, RoutedEventArgs e)
         {
             if (isStepsClicked) return;
             isStepsClicked = true;
 
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
             steps = Math.Min(stepsGoal, steps + 500);
             calories += 30;
             syncCoins += 1;
@@ -533,9 +633,9 @@ namespace HealthSync
 
             int remaining = stepsGoal - steps;
             if (remaining <= 0)
-                ShowNotification("🎉 Поздравляем! Вы выполнили норму шагов!");
+                ShowNotification("🎉 Поздравляем! Вы выполнили норму шагов!", "Поздравляем!");
             else
-                ShowNotification($"👣 +500 шагов! Осталось {remaining} шагов\n+1 SyncCoin");
+                ShowNotification($"👣 +500 шагов! Осталось {remaining} шагов\n+1 SyncCoin", "Успешно");
 
             await Task.Delay(500);
             isStepsClicked = false;
@@ -546,7 +646,6 @@ namespace HealthSync
             if (isWaterClicked) return;
             isWaterClicked = true;
 
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
             water = Math.Min(waterGoal, water + 0.25);
             syncCoins += 1;
             if (CurrentUser != null) CurrentUser.SyncCoins = syncCoins;
@@ -555,17 +654,19 @@ namespace HealthSync
 
             double remaining = waterGoal - water;
             if (remaining <= 0)
-                ShowNotification("💧 Отлично! Вы выполнили норму воды!");
+                ShowNotification("💧 Отлично! Вы выполнили норму воды!", "Поздравляем!");
             else
-                ShowNotification($"💧 +250 мл воды! Осталось {remaining:F1} л\n+1 SyncCoin");
+                ShowNotification($"💧 +250 мл воды! Осталось {remaining:F1} л\n+1 SyncCoin", "Успешно");
 
             await Task.Delay(500);
             isWaterClicked = false;
         }
 
-        private void QuickPressure_Click(object sender, RoutedEventArgs e)
+        private async void QuickPressure_Click(object sender, RoutedEventArgs e)
         {
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
+            if (isPressureClicked) return;
+            isPressureClicked = true;
+
             systolic = random.Next(110, 125);
             diastolic = random.Next(70, 80);
             heartRate = random.Next(60, 75);
@@ -574,19 +675,27 @@ namespace HealthSync
             UpdateUI();
 
             string status = GetPressureDescription();
-            ShowNotification($"🫀 Давление: {systolic}/{diastolic} - {status}\n+2 SyncCoin");
+            ShowNotification($"🫀 Давление: {systolic}/{diastolic} - {status}\n+2 SyncCoin", "Успешно");
+
+            await Task.Delay(500);
+            isPressureClicked = false;
         }
 
-        // Кнопки в целях (нижние) - ЛОКАЛЬНАЯ ВЕРСИЯ
+        // Кнопки в целях (нижние)
         private async void AddSteps_Click(object sender, RoutedEventArgs e)
         {
             if (isStepsClicked) return;
             isStepsClicked = true;
 
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
             steps = Math.Min(stepsGoal, steps + 500);
             calories += 30;
             UpdateUI();
+
+            int remaining = stepsGoal - steps;
+            if (remaining <= 0)
+                ShowNotification("🎉 Поздравляем! Вы выполнили норму шагов!", "Поздравляем!");
+            else
+                ShowNotification($"👣 +500 шагов! Осталось {remaining} шагов", "Успешно");
 
             await Task.Delay(500);
             isStepsClicked = false;
@@ -597,22 +706,45 @@ namespace HealthSync
             if (isWaterClicked) return;
             isWaterClicked = true;
 
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
             water = Math.Min(waterGoal, water + 0.25);
             UpdateUI();
+
+            double remaining = waterGoal - water;
+            if (remaining <= 0)
+                ShowNotification("💧 Отлично! Вы выполнили норму воды!", "Поздравляем!");
+            else
+                ShowNotification($"💧 +250 мл воды! Осталось {remaining:F1} л", "Успешно");
 
             await Task.Delay(500);
             isWaterClicked = false;
         }
 
-        private void AddSleep_Click(object sender, RoutedEventArgs e)
+        private async void AddSleep_Click(object sender, RoutedEventArgs e)
         {
-            // ЛОКАЛЬНАЯ ВЕРСИЯ - БЕЗ API
-            sleep = Math.Min(sleepGoal, sleep + 1);
+            if (isSleepClicked) return;
+            isSleepClicked = true;
+
+            double newSleep = sleep + 1;
+
+            if (newSleep <= sleepGoal)
+            {
+                sleep = newSleep;
+                ShowNotification($"😴 +1 час сна! Всего {sleep:F1} из {sleepGoal} ч", "Успешно");
+            }
+            else
+            {
+                double added = sleepGoal - sleep;
+                sleep = sleepGoal;
+                ShowNotification($"🎉 Достигнута цель по сну! {sleepGoal} ч\n😴 +{added:F1} ч добавлено", "Поздравляем!");
+            }
+
             UpdateUI();
+
+            await Task.Delay(500);
+            isSleepClicked = false;
         }
 
-        // ==================== ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ МЕНЮ И НАВИГАЦИИ ====================
+        // ==================== МЕТОДЫ ДЛЯ МЕНЮ И НАВИГАЦИИ ====================
 
         public void NavigateToPage(Page page)
         {
@@ -623,8 +755,30 @@ namespace HealthSync
 
         public void ShowMainContent()
         {
+            // Сохраняем текущего пользователя
+            SaveCurrentUser();
+
             MainFrame.Visibility = Visibility.Collapsed;
             MainContent.Visibility = Visibility.Visible;
+
+            // Загружаем данные пользователя
+            if (CurrentUser != null)
+            {
+                stepsGoal = CurrentUser.StepsGoal;
+                waterGoal = CurrentUser.WaterGoal;
+                sleepGoal = CurrentUser.SleepGoal;
+                syncCoins = CurrentUser.SyncCoins;
+                height = CurrentUser.Height;
+                weight = CurrentUser.Weight;
+                heartRate = CurrentUser.HeartRate;
+                systolic = CurrentUser.Systolic;
+                diastolic = CurrentUser.Diastolic;
+                steps = CurrentUser.Steps;
+                water = CurrentUser.Water;
+                sleep = CurrentUser.Sleep;
+                calories = CurrentUser.Calories;
+            }
+
             UpdateUI();
             LoadHistory();
             UpdateGraph();
@@ -633,17 +787,26 @@ namespace HealthSync
         // Обработчики меню
         private void Home_Click(object sender, RoutedEventArgs e)
         {
-            ShowMainContent();
+            if (CurrentUser != null)
+                ShowMainContent();
+            else
+                NavigateToPage(new LoginPage());
         }
 
         private void Profile_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToPage(new ProfilePage());
+            if (CurrentUser != null)
+                NavigateToPage(new ProfilePage());
+            else
+                NavigateToPage(new LoginPage());
         }
 
         private void Settings_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToPage(new SettingsPage());
+            if (CurrentUser != null)
+                NavigateToPage(new SettingsPage());
+            else
+                NavigateToPage(new LoginPage());
         }
 
         private void Help_Click(object sender, RoutedEventArgs e)

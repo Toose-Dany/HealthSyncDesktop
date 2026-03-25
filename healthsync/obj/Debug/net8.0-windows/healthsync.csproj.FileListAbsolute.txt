@@ -24,3 +24,7 @@ D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\App.baml
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\Help.g.cs
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\Profile.g.cs
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\Setting.g.cs
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\Login.baml
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\register.baml
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\Login.g.cs
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\register.g.cs

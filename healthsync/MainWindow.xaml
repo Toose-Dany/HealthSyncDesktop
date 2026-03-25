@@ -124,7 +124,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="ИМТ:" FontSize="14" Foreground="#666" Margin="0,0,10,0"/>
+                                    <TextBlock Text="ИМТ:" FontSize="14" Foreground="#666" Margin="0,-10,10,0"/>
                                     <TextBlock x:Name="BMIText" Text="22.9" FontSize="20" FontWeight="Bold" 
                                                Foreground="#4CAF50" MouseDown="BMIText_MouseDown"
                                                Cursor="Hand" TextDecorations="Underline"/>
@@ -485,7 +485,7 @@
             </Border>
         </Grid>
 
-        <!-- Frame для страниц (изначально скрыт) -->
+        <!-- Frame для страниц -->
         <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Visibility="Collapsed"/>
     </Grid>
 </Window>

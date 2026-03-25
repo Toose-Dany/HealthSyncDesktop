@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 
-5-796715114
+7-1574054072
 
-10953827977
+13-2032040170
 198-635017904
-App.xaml;Help.xaml;MainWindow.xaml;Profile.xaml;Setting.xaml;
+App.xaml;Help.xaml;Login.xaml;MainWindow.xaml;Profile.xaml;register.xaml;Setting.xaml;
 
 False
 
