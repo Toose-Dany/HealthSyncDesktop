@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "healthsync", "healthsync.csproj", "{B7B4EAC6-311F-429D-B595-98BB77E0DDBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7B4EAC6-311F-429D-B595-98BB77E0DDBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7B4EAC6-311F-429D-B595-98BB77E0DDBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7B4EAC6-311F-429D-B595-98BB77E0DDBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7B4EAC6-311F-429D-B595-98BB77E0DDBD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F6B199E0-5B9F-43F4-94CE-33993C4AE713}
+	EndGlobalSection
+EndGlobal
