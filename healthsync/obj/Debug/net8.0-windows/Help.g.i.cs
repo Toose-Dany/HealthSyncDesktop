@@ -60,7 +60,7 @@ namespace HealthSync {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/healthsync;component/help.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/healthsync;V1.0.0.0;component/help.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\Help.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

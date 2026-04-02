@@ -9,12 +9,12 @@ healthsync
 none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
-
-7-1574054072
+D:\healthsynccc\healthsync\App.xaml
+6927929700
 
 13-2032040170
 198-635017904
-App.xaml;Help.xaml;Login.xaml;MainWindow.xaml;Profile.xaml;register.xaml;Setting.xaml;
+Help.xaml;Login.xaml;MainWindow.xaml;Profile.xaml;register.xaml;Setting.xaml;
 
 False
 
