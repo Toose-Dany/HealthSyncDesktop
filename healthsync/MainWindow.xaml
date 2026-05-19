@@ -439,42 +439,39 @@
                                 <TextBlock Text="ПРОГНОЗ" Foreground="#E0E0FF" FontSize="10"/>
                                 <TextBlock x:Name="BioAgeText" Text="Биологический возраст: 32" 
                                            Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0"/>
-                                <TextBlock Text="(фактический: 28)" Foreground="#E0E0FF" FontSize="10"/>
+                                
                             </StackPanel>
                         </Border>
 
-                        <!-- Рекомендации -->
-                        <TextBlock Text="РЕКОМЕНДАЦИИ" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
+                        <!-- Погода -->
+                        <Border Background="#E8EAF6" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="🌤️ ПОГОДА" FontSize="11" Foreground="#666" Margin="0,0,0,10"/>
 
-                        <Border Background="#FFF9C4" CornerRadius="8" Padding="10" Margin="0,0,0,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="🌅" FontSize="20" Grid.Column="0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Прогулка" FontSize="12" FontWeight="Bold"/>
-                                    <TextBlock Text="Сейчас отличное время для прогулки" 
-                                               FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock x:Name="WeatherIcon" Text="☀️" FontSize="32" Grid.Column="0" Margin="0,0,15,0"/>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock x:Name="WeatherTemp" Text="--°C" FontSize="18" FontWeight="Bold"/>
+                                        <TextBlock x:Name="WeatherCondition" Text="Загрузка..." FontSize="11" Foreground="#666"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="WeatherRecommendation" Text="..." FontSize="12" 
+                   TextWrapping="Wrap" Margin="0,10,0,0" Foreground="#333"/>
+
+                                <Button x:Name="RefreshWeatherButton" Content="🔄 Обновить" 
+                Background="#1A237E" Foreground="White" Height="30" 
+                Margin="0,10,0,0" Click="RefreshWeather_Click" Cursor="Hand"/>
+                            </StackPanel>
                         </Border>
 
-                        <Border Background="#E1F5FE" CornerRadius="8" Padding="10" Margin="0,0,0,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="💧" FontSize="20" Grid.Column="0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Вода" FontSize="12" FontWeight="Bold"/>
-                                    <TextBlock x:Name="WaterRecommendationText" Text="Осталось выпить 2.5 л воды" 
-                                               FontSize="10" Foreground="#666" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                        
 
                         <!-- История -->
                         <TextBlock Text="ИСТОРИЯ" FontSize="11" Foreground="#666" Margin="0,15,0,10"/>

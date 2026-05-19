@@ -105,8 +105,9 @@ namespace HealthSync
                 // Сохраняем в файл
                 UserManager.UpdateUser(user);
 
-                // Обновляем данные в главном окне
-                MainWindow.Instance.UpdateUI();
+                // ОБНОВЛЯЕМ ДАННЫЕ В ГЛАВНОМ ОКНЕ (ВАЖНО!)
+                MainWindow.Instance.LoadUserData();  // ← Перезагружаем данные пользователя (включая возраст)
+                MainWindow.Instance.UpdateUI();      // ← Обновляем интерфейс
 
                 MainWindow.Instance.ShowNotification("Профиль успешно обновлен!", "Успешно");
             }

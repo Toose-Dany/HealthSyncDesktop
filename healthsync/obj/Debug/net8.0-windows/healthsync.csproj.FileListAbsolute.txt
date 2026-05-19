@@ -28,3 +28,6 @@ D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\refint\healthsync.dll
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\healthsync.pdb
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\healthsync.genruntimeconfig.cache
 D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\ref\healthsync.dll
+D:\healthsynccc\healthsync\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\healthsync.csproj.AssemblyReference.cache
+D:\healthsynccc\healthsync\obj\Debug\net8.0-windows\healthsync.csproj.Up2Date

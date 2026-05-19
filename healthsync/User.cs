@@ -50,6 +50,8 @@ namespace HealthSync
         public bool SleepGoalAchieved { get; set; } = false;
         public bool CaloriesGoalAchieved { get; set; } = false;
 
+        public string City { get; set; } = "Moscow";
+
         public DateTime LastUpdateDate { get; set; } = DateTime.Now.Date;
     }
 }

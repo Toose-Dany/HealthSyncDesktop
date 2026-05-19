@@ -18,6 +18,7 @@ namespace HealthSync
         public int syncCoins = 150;
         public double weight = 72.5;
         public double height = 178;
+        private int userAge = 0;
 
         // Пульс и давление
         public int heartRate = 68;
@@ -43,10 +44,8 @@ namespace HealthSync
         private double lastSleep = 0;
         private int lastCalories = 0;
 
-        // Флаг для защиты от повторного вызова награды
+        // Флаги
         private bool isRewarding = false;
-
-        // Флаги для предотвращения двойного нажатия
         private bool isSetStepsClicked = false;
         private bool isSetWaterClicked = false;
         private bool isSetSleepClicked = false;
@@ -66,6 +65,9 @@ namespace HealthSync
 
         // Текущая выбранная метрика для графика
         private string currentMetric = "Steps";
+
+        // Погода
+        private WeatherService weatherService = new WeatherService();
 
         public MainWindow()
         {
@@ -117,12 +119,17 @@ namespace HealthSync
             WaterRadio.Checked += MetricRadio_Checked;
             SleepRadio.Checked += MetricRadio_Checked;
             CaloriesRadio.Checked += MetricRadio_Checked;
+
+            // Обновление погоды по кнопке
+            RefreshWeatherButton.Click += RefreshWeather_Click;
         }
 
         public void LoadUserData()
         {
             if (CurrentUser != null)
             {
+                userAge = CurrentUser.Age;
+
                 stepsGoal = CurrentUser.StepsGoal;
                 waterGoal = CurrentUser.WaterGoal;
                 sleepGoal = CurrentUser.SleepGoal;
@@ -189,6 +196,9 @@ namespace HealthSync
                 LoadHistory();
                 UpdateMetricsGraph();
                 ApplyTheme(CurrentUser.Theme);
+
+                // Загружаем погоду
+                LoadWeather();
             }
         }
 
@@ -238,6 +248,7 @@ namespace HealthSync
             UpdatePressureColor();
 
             SleepHoursText.Text = sleep.ToString("F1");
+            UpdateSleepColor();
 
             WaterGoalText.Text = $"{water:F1}/{waterGoal} л";
             WaterProgressBar.Value = (water / waterGoal) * 100;
@@ -259,6 +270,41 @@ namespace HealthSync
             UpdateDailyInsight();
             UpdateBioAge();
             UpdateMetricsGraph();
+        }
+
+        // Загрузка погоды
+        public async void LoadWeather()
+        {
+            try
+            {
+                var weather = await weatherService.GetWeatherAsync(); // без параметра
+
+                WeatherTemp.Text = $"{weather.Temperature:F0}°C";
+                WeatherCondition.Text = weather.Condition;
+                WeatherRecommendation.Text = weather.Recommendation;
+
+                // Иконка
+                if (weather.Temperature <= 0)
+                    WeatherIcon.Text = "❄️";
+                else if (weather.Temperature <= 10)
+                    WeatherIcon.Text = "🌬️";
+                else if (weather.Temperature <= 20)
+                    WeatherIcon.Text = "🌤️";
+                else if (weather.Temperature <= 30)
+                    WeatherIcon.Text = "☀️";
+                else
+                    WeatherIcon.Text = "🔥";
+            }
+            catch (Exception ex)
+            {
+                WeatherTemp.Text = "--°C";
+                WeatherCondition.Text = "Ошибка";
+            }
+        }
+
+        private void RefreshWeather_Click(object sender, RoutedEventArgs e)
+        {
+            LoadWeather();
         }
 
         private void UpdatePressureColor()
@@ -319,8 +365,8 @@ namespace HealthSync
         {
             string[] insights = {
                 "❤️ Пульс в норме. Для здоровья сердца проходите 8000+ шагов ежедневно.",
-                "💧 Вам нужно выпить " + (waterGoal - water).ToString("F1") + " л воды. Начните прямо сейчас!",
-                "👣 Сегодня вы прошли " + steps.ToString("N0") + " шагов. До цели осталось " + (stepsGoal - steps).ToString("N0"),
+                "💧 Вам нужно выпить " + (waterGoal - water).ToString("F1") + " л воды.",
+                "👣 Сегодня вы прошли " + steps.ToString("N0") + " шагов. Осталось " + (stepsGoal - steps).ToString("N0"),
                 "😴 " + GetSleepDescription() + " (" + sleep.ToString("F1") + " ч)",
                 "⚖️ Ваш ИМТ в норме. Так держать!",
                 "🫀 " + GetPressureDescription() + " - " + systolic + "/" + diastolic,
@@ -331,15 +377,62 @@ namespace HealthSync
 
         private void UpdateBioAge()
         {
-            int actualAge = 28;
+            int actualAge = userAge;
+            if (actualAge <= 0) actualAge = 28;
             int bioAge = actualAge;
 
-            if (steps > 7000 && sleep >= 7 && heartRate < 70 && systolic < 120)
-                bioAge = actualAge - 2;
-            else if (steps < 3000 || sleep < 6 || heartRate > 80 || systolic > 130)
-                bioAge = actualAge + 3;
+            double bmi = weight / ((height / 100) * (height / 100));
+            if (bmi < 18.5 || bmi > 30)
+                bioAge += 2;
+            else if (bmi >= 22 && bmi <= 25)
+                bioAge -= 1;
 
-            BioAgeText.Text = $"Биологический возраст: {bioAge}";
+            if (steps >= 10000)
+                bioAge -= 2;
+            else if (steps >= 7000)
+                bioAge -= 1;
+            else if (steps < 3000)
+                bioAge += 3;
+            else if (steps < 5000)
+                bioAge += 1;
+
+            if (sleep >= 7 && sleep <= 8)
+                bioAge -= 2;
+            else if (sleep < 5 || sleep > 9)
+                bioAge += 3;
+            else if (sleep < 6)
+                bioAge += 1;
+
+            if (heartRate >= 60 && heartRate <= 70)
+                bioAge -= 1;
+            else if (heartRate > 80)
+                bioAge += 2;
+            else if (heartRate > 90)
+                bioAge += 4;
+
+            if (systolic >= 110 && systolic <= 120)
+                bioAge -= 1;
+            else if (systolic > 130)
+                bioAge += 2;
+            else if (systolic > 140)
+                bioAge += 4;
+
+            if (water >= 2.0)
+                bioAge -= 1;
+            else if (water < 1.0)
+                bioAge += 1;
+
+            bioAge = Math.Max(18, Math.Min(80, bioAge));
+
+            string comparison;
+            if (bioAge < actualAge)
+                comparison = "🏆 Вы моложе своего возраста! Так держать!";
+            else if (bioAge > actualAge)
+                comparison = "⚠️ Ваш организм старше. Пора заняться здоровьем!";
+            else
+                comparison = "✅ Ваш биологический возраст соответствует календарному.";
+
+            BioAgeText.Text = $"Биологический возраст: {bioAge}\n{comparison}";
         }
 
         private void LoadHistory()
@@ -399,6 +492,7 @@ namespace HealthSync
                 CurrentUser.Sleep = sleep;
                 CurrentUser.Calories = calories;
                 CurrentUser.LastUpdateDate = lastUpdateDate;
+                CurrentUser.Age = userAge;
 
                 SaveToHistory();
                 UserManager.UpdateUser(CurrentUser);
@@ -449,7 +543,6 @@ namespace HealthSync
                 bool goalAchieved = false;
                 string rewards = "";
 
-                // Шаги
                 if (steps >= stepsGoal && steps > 0)
                 {
                     if (!CurrentUser.StepsGoalAchieved)
@@ -462,7 +555,6 @@ namespace HealthSync
                     }
                 }
 
-                // Вода
                 if (water >= waterGoal && water > 0)
                 {
                     if (!CurrentUser.WaterGoalAchieved)
@@ -475,7 +567,6 @@ namespace HealthSync
                     }
                 }
 
-                // Сон
                 if (sleep >= sleepGoal && sleep > 0)
                 {
                     if (!CurrentUser.SleepGoalAchieved)
@@ -488,7 +579,6 @@ namespace HealthSync
                     }
                 }
 
-                // Калории
                 if (calories >= caloriesGoal && calories > 0)
                 {
                     if (!CurrentUser.CaloriesGoalAchieved)
@@ -532,53 +622,48 @@ namespace HealthSync
         {
             if (CurrentUser == null || MetricsGraphGrid == null) return;
 
-            double[] values = new double[7];
+            double[] values = GetLast7DaysValues();
             double targetValue = 0;
             string unit = "";
             SolidColorBrush color = new SolidColorBrush(Color.FromRgb(76, 175, 80));
 
-            int todayIndex = ((int)DateTime.Now.DayOfWeek + 6) % 7;
-
             switch (currentMetric)
             {
                 case "Steps":
-                    values = CurrentUser.StepsHistory.Select(x => (double)x).ToArray();
                     targetValue = stepsGoal;
                     unit = "шагов";
                     color = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                    CurrentMetricValue.Text = $"Шаги за неделю: {CurrentUser.StepsHistory.Sum():N0} / {stepsGoal * 7:N0}";
+                    CurrentMetricValue.Text = $"Шаги за неделю: {values.Sum():N0} / {stepsGoal * 7:N0}";
                     CurrentMetricValue.Foreground = color;
                     break;
                 case "Water":
-                    values = CurrentUser.WaterHistory.ToArray();
                     targetValue = waterGoal;
                     unit = "л";
                     color = new SolidColorBrush(Color.FromRgb(33, 150, 243));
-                    CurrentMetricValue.Text = $"Вода за неделю: {CurrentUser.WaterHistory.Sum():F1} / {waterGoal * 7:F1} л";
+                    CurrentMetricValue.Text = $"Вода за неделю: {values.Sum():F1} / {waterGoal * 7:F1} л";
                     CurrentMetricValue.Foreground = color;
                     break;
                 case "Sleep":
-                    values = CurrentUser.SleepHistory.ToArray();
                     targetValue = sleepGoal;
                     unit = "ч";
                     color = new SolidColorBrush(Color.FromRgb(92, 107, 192));
-                    CurrentMetricValue.Text = $"Сон за неделю: {CurrentUser.SleepHistory.Sum():F1} / {sleepGoal * 7:F1} ч";
+                    CurrentMetricValue.Text = $"Сон за неделю: {values.Sum():F1} / {sleepGoal * 7:F1} ч";
                     CurrentMetricValue.Foreground = color;
                     break;
                 case "Calories":
-                    values = CurrentUser.CaloriesHistory.Select(x => (double)x).ToArray();
                     targetValue = caloriesGoal;
                     unit = "ккал";
                     color = new SolidColorBrush(Color.FromRgb(255, 87, 34));
-                    CurrentMetricValue.Text = $"Калории за неделю: {CurrentUser.CaloriesHistory.Sum():N0} / {caloriesGoal * 7:N0} ккал";
+                    CurrentMetricValue.Text = $"Калории за неделю: {values.Sum():N0} / {caloriesGoal * 7:N0} ккал";
                     CurrentMetricValue.Foreground = color;
                     break;
             }
 
             double maxWeeklyValue = values.Max();
             double maxGraphValue = Math.Max(targetValue, maxWeeklyValue);
-
             if (maxGraphValue <= 0) maxGraphValue = 1;
+
+            int todayIndex = ((int)DateTime.Now.DayOfWeek + 6) % 7;
 
             for (int i = 0; i < Math.Min(values.Length, 7) && i < MetricsGraphGrid.Children.Count; i++)
             {
@@ -587,10 +672,9 @@ namespace HealthSync
                 {
                     double heightPercent = (values[i] / maxGraphValue) * 100;
                     double height = Math.Max(15, Math.Min(140, heightPercent));
-
                     border.Height = height;
 
-                    if (values[i] >= targetValue)
+                    if (values[i] >= targetValue && values[i] > 0)
                     {
                         border.Background = new SolidColorBrush(Color.FromRgb(255, 215, 0));
                     }
@@ -614,6 +698,108 @@ namespace HealthSync
             }
 
             UpdateTargetLine(targetValue, maxGraphValue);
+        }
+
+        private double[] GetLast7DaysValues()
+        {
+            double[] result = new double[7];
+            DateTime today = DateTime.Now.Date;
+
+            DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek + 1);
+            if (today.DayOfWeek == DayOfWeek.Sunday)
+                startOfWeek = today.AddDays(-6);
+
+            for (int i = 0; i < 7; i++)
+            {
+                DateTime day = startOfWeek.AddDays(i);
+                double value = 0;
+
+                switch (currentMetric)
+                {
+                    case "Steps":
+                        value = GetStepsForDate(day);
+                        break;
+                    case "Water":
+                        value = GetWaterForDate(day);
+                        break;
+                    case "Sleep":
+                        value = GetSleepForDate(day);
+                        break;
+                    case "Calories":
+                        value = GetCaloriesForDate(day);
+                        break;
+                }
+                result[i] = value;
+            }
+            return result;
+        }
+
+        private int GetStepsForDate(DateTime date)
+        {
+            if (CurrentUser?.StepsHistory != null)
+            {
+                int dayIndex = (date - DateTime.Now.Date).Days;
+                if (dayIndex >= -6 && dayIndex <= 0)
+                {
+                    int historyIndex = 6 + dayIndex;
+                    if (historyIndex >= 0 && historyIndex < CurrentUser.StepsHistory.Count)
+                    {
+                        return CurrentUser.StepsHistory[historyIndex];
+                    }
+                }
+            }
+            return date.Date == DateTime.Now.Date ? steps : 0;
+        }
+
+        private double GetWaterForDate(DateTime date)
+        {
+            if (CurrentUser?.WaterHistory != null)
+            {
+                int dayIndex = (date - DateTime.Now.Date).Days;
+                if (dayIndex >= -6 && dayIndex <= 0)
+                {
+                    int historyIndex = 6 + dayIndex;
+                    if (historyIndex >= 0 && historyIndex < CurrentUser.WaterHistory.Count)
+                    {
+                        return CurrentUser.WaterHistory[historyIndex];
+                    }
+                }
+            }
+            return date.Date == DateTime.Now.Date ? water : 0;
+        }
+
+        private double GetSleepForDate(DateTime date)
+        {
+            if (CurrentUser?.SleepHistory != null)
+            {
+                int dayIndex = (date - DateTime.Now.Date).Days;
+                if (dayIndex >= -6 && dayIndex <= 0)
+                {
+                    int historyIndex = 6 + dayIndex;
+                    if (historyIndex >= 0 && historyIndex < CurrentUser.SleepHistory.Count)
+                    {
+                        return CurrentUser.SleepHistory[historyIndex];
+                    }
+                }
+            }
+            return date.Date == DateTime.Now.Date ? sleep : 0;
+        }
+
+        private int GetCaloriesForDate(DateTime date)
+        {
+            if (CurrentUser?.CaloriesHistory != null)
+            {
+                int dayIndex = (date - DateTime.Now.Date).Days;
+                if (dayIndex >= -6 && dayIndex <= 0)
+                {
+                    int historyIndex = 6 + dayIndex;
+                    if (historyIndex >= 0 && historyIndex < CurrentUser.CaloriesHistory.Count)
+                    {
+                        return CurrentUser.CaloriesHistory[historyIndex];
+                    }
+                }
+            }
+            return date.Date == DateTime.Now.Date ? calories : 0;
         }
 
         private void UpdateTargetLine(double targetValue, double maxGraphValue)
@@ -865,7 +1051,7 @@ namespace HealthSync
             isLogSleepClicked = false;
         }
 
-        // === КНОПКИ "+" (С БЛОКИРОВКОЙ КНОПКИ) ===
+        // === КНОПКИ "+" ===
         private async void AddSteps_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
@@ -983,7 +1169,7 @@ namespace HealthSync
             }
         }
 
-        // === КНОПКИ "✏️" (УСТАНОВКА ЗНАЧЕНИЙ) ===
+        // === КНОПКИ "✏️" ===
         private async void SetSteps_Click(object sender, RoutedEventArgs e)
         {
             if (isSetStepsClicked) return;
@@ -1096,7 +1282,7 @@ namespace HealthSync
             isSetCaloriesClicked = false;
         }
 
-        // === КНОПКИ "↩️" (ОТКАТ) ===
+        // === КНОПКИ "↩️" ===
         private async void UndoSteps_Click(object sender, RoutedEventArgs e)
         {
             if (isUndoStepsClicked) return;

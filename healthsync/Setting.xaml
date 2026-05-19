@@ -51,6 +51,22 @@
                     <TextBlock Grid.Column="2" Text="часов" Margin="5,0,0,0" VerticalAlignment="Center"/>
                 </Grid>
 
+                <!-- Погода -->
+                <TextBlock Text="🌍 ПОГОДА" FontSize="16" FontWeight="Bold" 
+                          Foreground="#1A237E" Margin="0,20,0,10"/>
+
+                <Grid Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Город для погоды:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="CityTextBox" Grid.Column="1" Padding="8" Margin="10,0" Text="Moscow"/>
+                    <TextBlock Grid.Column="2" Text="(на англ.)" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="10" Foreground="#666"/>
+                </Grid>
+
                 <!-- Уведомления -->
                 <TextBlock Text="🔔 УВЕДОМЛЕНИЯ" FontSize="16" FontWeight="Bold" 
                           Foreground="#1A237E" Margin="0,20,0,10"/>
@@ -67,24 +83,6 @@
                     <TextBlock Text="Время напоминания:" VerticalAlignment="Center"/>
                     <TextBox x:Name="ReminderTimeBox" Grid.Column="1" Margin="10,0" Width="120" Text="20:00" HorizontalAlignment="Left"/>
                 </Grid>
-
-                <!-- Единицы измерения -->
-                <TextBlock Text="📏 ЕДИНИЦЫ ИЗМЕРЕНИЯ" FontSize="16" FontWeight="Bold" 
-                          Foreground="#1A237E" Margin="0,20,0,10"/>
-
-                <ComboBox x:Name="UnitsSystemBox" Margin="0,5" Width="200" HorizontalAlignment="Left">
-                    <ComboBoxItem Content="Метрическая (кг, см)" IsSelected="True"/>
-                    <ComboBoxItem Content="Имперская (фунты, дюймы)"/>
-                </ComboBox>
-
-                <!-- Тема -->
-                <TextBlock Text="🎨 ОФОРМЛЕНИЕ" FontSize="16" FontWeight="Bold" 
-                          Foreground="#1A237E" Margin="0,20,0,10"/>
-
-                <ComboBox x:Name="ThemeBox" Margin="0,5" Width="200" HorizontalAlignment="Left">
-                    <ComboBoxItem Content="Светлая тема" IsSelected="True"/>
-                    <ComboBoxItem Content="Темная тема"/>
-                </ComboBox>
 
                 <!-- Синхронизация -->
                 <TextBlock Text="🔄 СИНХРОНИЗАЦИЯ" FontSize="16" FontWeight="Bold" 

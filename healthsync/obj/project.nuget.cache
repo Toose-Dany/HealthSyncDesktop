@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "KXhlf3kJceo=",
+  "dgSpecHash": "PvZFHFg7fn0=",
   "success": true,
   "projectFilePath": "D:\\healthsynccc\\healthsync\\healthsync.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Academy\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
   "logs": []
 }

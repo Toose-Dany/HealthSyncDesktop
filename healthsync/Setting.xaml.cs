@@ -26,24 +26,15 @@ namespace HealthSync
                 WaterGoalBox.Text = user.WaterGoal.ToString("F1");
                 SleepGoalBox.Text = user.SleepGoal.ToString("F1");
 
+                // Город для погоды
+                CityTextBox.Text = user.City ?? "Moscow";
+
                 // Уведомления
                 NotificationsCheckBox.IsChecked = user.NotificationsEnabled;
                 DailyReminderCheckBox.IsChecked = user.DailyReminder;
 
                 // Время напоминания
                 ReminderTimeBox.Text = user.ReminderTime;
-
-                // Единицы измерения
-                if (user.UnitsSystem == "Imperial")
-                    UnitsSystemBox.SelectedIndex = 1;
-                else
-                    UnitsSystemBox.SelectedIndex = 0;
-
-                // Тема
-                if (user.Theme == "Dark")
-                    ThemeBox.SelectedIndex = 1;
-                else
-                    ThemeBox.SelectedIndex = 0;
 
                 // Автосинхронизация
                 AutoSyncCheckBox.IsChecked = user.AutoSync;
@@ -81,17 +72,15 @@ namespace HealthSync
                 MessageBox.Show("Некорректное значение для сна!", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
 
+            // Сохраняем город для погоды
+            user.City = CityTextBox.Text.Trim();
+            if (string.IsNullOrEmpty(user.City))
+                user.City = "Moscow";
+
             // Сохраняем уведомления
             user.NotificationsEnabled = NotificationsCheckBox.IsChecked ?? false;
             user.DailyReminder = DailyReminderCheckBox.IsChecked ?? false;
             user.ReminderTime = ReminderTimeBox.Text;
-
-            // Сохраняем единицы измерения
-            user.UnitsSystem = (UnitsSystemBox.SelectedItem as ComboBoxItem)?.Content.ToString().Contains("Метрическая") == true ? "Metric" : "Imperial";
-
-            // Сохраняем тему
-            string newTheme = (ThemeBox.SelectedItem as ComboBoxItem)?.Content.ToString().Contains("Темная") == true ? "Dark" : "Light";
-            user.Theme = newTheme;
 
             // Сохраняем автосинхронизацию
             user.AutoSync = AutoSyncCheckBox.IsChecked ?? false;
@@ -99,8 +88,8 @@ namespace HealthSync
             // СОХРАНЯЕМ В ФАЙЛ
             UserManager.UpdateUser(user);
 
-            // Применяем тему
-            MainWindow.Instance.ApplyTheme(newTheme);
+            // Обновляем погоду в главном окне
+            MainWindow.Instance.LoadWeather();
 
             // Обновляем UI в главном окне
             MainWindow.Instance.UpdateUI();
@@ -118,11 +107,10 @@ namespace HealthSync
                 StepsGoalBox.Text = "10000";
                 WaterGoalBox.Text = "2.5";
                 SleepGoalBox.Text = "8.0";
+                CityTextBox.Text = "Moscow";
                 NotificationsCheckBox.IsChecked = true;
                 DailyReminderCheckBox.IsChecked = true;
                 ReminderTimeBox.Text = "20:00";
-                UnitsSystemBox.SelectedIndex = 0;
-                ThemeBox.SelectedIndex = 0;
                 AutoSyncCheckBox.IsChecked = true;
 
                 MainWindow.Instance.ShowNotification("Настройки сброшены! Не забудьте сохранить.");
