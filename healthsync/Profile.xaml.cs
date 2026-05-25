@@ -26,7 +26,6 @@ namespace HealthSync
                 HeightBox.Text = user.Height.ToString();
                 WeightBox.Text = user.Weight.ToString();
 
-                // Устанавливаем пол
                 if (user.Gender == "Мужской")
                     GenderBox.SelectedIndex = 0;
                 else if (user.Gender == "Женский")
@@ -44,7 +43,6 @@ namespace HealthSync
             var user = MainWindow.Instance.CurrentUser;
             if (user != null)
             {
-                // Проверяем и сохраняем имя пользователя
                 if (!string.IsNullOrWhiteSpace(UsernameBox.Text))
                     user.Username = UsernameBox.Text.Trim();
                 else
@@ -54,7 +52,6 @@ namespace HealthSync
                     return;
                 }
 
-                // Проверяем и сохраняем email
                 if (!string.IsNullOrWhiteSpace(EmailBox.Text) && EmailBox.Text.Contains("@"))
                     user.Email = EmailBox.Text.Trim();
                 else
@@ -64,7 +61,6 @@ namespace HealthSync
                     return;
                 }
 
-                // Сохраняем пол
                 if (GenderBox.SelectedItem != null)
                 {
                     var selectedGender = GenderBox.SelectedItem as ComboBoxItem;
@@ -72,7 +68,6 @@ namespace HealthSync
                         user.Gender = selectedGender.Content.ToString();
                 }
 
-                // Проверяем и сохраняем возраст
                 if (int.TryParse(AgeBox.Text, out int age) && age >= 10 && age <= 120)
                     user.Age = age;
                 else
@@ -82,9 +77,11 @@ namespace HealthSync
                     return;
                 }
 
-                // Проверяем и сохраняем рост
                 if (double.TryParse(HeightBox.Text, out double height) && height >= 100 && height <= 250)
+                {
                     user.Height = height;
+                    await MainWindow.Api.UpdateHeight(user.Id, height);
+                }
                 else
                 {
                     MainWindow.Instance.ShowNotification("Введите корректный рост (100-250 см)!", "Ошибка");
@@ -92,9 +89,11 @@ namespace HealthSync
                     return;
                 }
 
-                // Проверяем и сохраняем вес
                 if (double.TryParse(WeightBox.Text, out double weight) && weight >= 20 && weight <= 300)
+                {
                     user.Weight = weight;
+                    await MainWindow.Api.UpdateWeight(user.Id, weight);
+                }
                 else
                 {
                     MainWindow.Instance.ShowNotification("Введите корректный вес (20-300 кг)!", "Ошибка");
@@ -102,12 +101,9 @@ namespace HealthSync
                     return;
                 }
 
-                // Сохраняем в файл
                 UserManager.UpdateUser(user);
-
-                // ОБНОВЛЯЕМ ДАННЫЕ В ГЛАВНОМ ОКНЕ (ВАЖНО!)
-                MainWindow.Instance.LoadUserData();  // ← Перезагружаем данные пользователя (включая возраст)
-                MainWindow.Instance.UpdateUI();      // ← Обновляем интерфейс
+                MainWindow.Instance.LoadUserData();
+                MainWindow.Instance.UpdateUI();
 
                 MainWindow.Instance.ShowNotification("Профиль успешно обновлен!", "Успешно");
             }

@@ -11,7 +11,7 @@ namespace HealthSync
             InitializeComponent();
         }
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameBox.Text.Trim();
             string email = EmailBox.Text.Trim();
@@ -56,7 +56,9 @@ namespace HealthSync
 
             string gender = (GenderBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            if (UserManager.RegisterUser(username, email, password, height, weight, age, gender))
+            var (success, error) = await MainWindow.Api.Register(username, email, password, height, weight, age, gender);
+
+            if (success)
             {
                 MessageBox.Show("Регистрация успешна! Теперь вы можете войти.", "Успех",
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -64,7 +66,7 @@ namespace HealthSync
             }
             else
             {
-                MessageBox.Show("Пользователь с таким именем или email уже существует!", "Ошибка",
+                MessageBox.Show($"Ошибка регистрации: {error}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

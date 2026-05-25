@@ -11,7 +11,7 @@ namespace HealthSync
             InitializeComponent();
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
@@ -23,10 +23,11 @@ namespace HealthSync
                 return;
             }
 
-            var user = UserManager.LoginUser(username, password);
+            var (success, apiUser, error) = await MainWindow.Api.Login(username, password);
 
-            if (user != null)
+            if (success && apiUser != null)
             {
+                var user = ConvertToLocalUser(apiUser);
                 MainWindow.Instance.CurrentUser = user;
                 MainWindow.Instance.LoadUserData();
                 MainWindow.Instance.ShowMainContent();
@@ -35,7 +36,7 @@ namespace HealthSync
             }
             else
             {
-                MessageBox.Show("Неверный логин или пароль!\n\nИспользуйте: Пользователь / 123", "Ошибка",
+                MessageBox.Show($"Неверный логин или пароль!\n\nОшибка: {error}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -43,6 +44,37 @@ namespace HealthSync
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             MainWindow.Instance.NavigateToPage(new RegisterPage());
+        }
+
+        private User ConvertToLocalUser(UserApiModel apiUser)
+        {
+            return new User
+            {
+                Id = apiUser.id,
+                Username = apiUser.username,
+                Email = apiUser.email,
+                Height = apiUser.height,
+                Weight = apiUser.weight,
+                Age = apiUser.age,
+                SyncCoins = apiUser.sync_coins,
+                Steps = apiUser.steps,
+                Water = apiUser.water,
+                Sleep = apiUser.sleep,
+                HeartRate = apiUser.heart_rate,
+                Systolic = apiUser.systolic,
+                Diastolic = apiUser.diastolic,
+                StepsGoal = apiUser.steps_goal,
+                WaterGoal = apiUser.water_goal,
+                SleepGoal = apiUser.sleep_goal,
+                CaloriesGoal = apiUser.calories_goal,
+                City = apiUser.city ?? "Moscow",
+                Theme = apiUser.theme ?? "Light",
+                Gender = apiUser.gender == "male" ? "Мужской" : "Женский",
+                NotificationsEnabled = apiUser.notifications_enabled,
+                AutoSync = apiUser.auto_sync,
+                DailyReminder = apiUser.daily_reminder,
+                ReminderTime = apiUser.reminder_time ?? "20:00"
+            };
         }
     }
 }

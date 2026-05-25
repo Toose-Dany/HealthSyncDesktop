@@ -44,7 +44,7 @@ namespace HealthSync
         public bool DailyReminder { get; set; } = true;
         public string ReminderTime { get; set; } = "20:00";
 
-      
+
         public bool StepsGoalAchieved { get; set; } = false;
         public bool WaterGoalAchieved { get; set; } = false;
         public bool SleepGoalAchieved { get; set; } = false;

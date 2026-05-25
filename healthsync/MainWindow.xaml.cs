@@ -13,6 +13,7 @@ namespace HealthSync
     {
         public static MainWindow Instance;
         public User CurrentUser { get; set; }
+        public static ApiClient Api { get; private set; }
 
         // Основные показатели
         public int syncCoins = 150;
@@ -74,6 +75,10 @@ namespace HealthSync
             InitializeComponent();
             Instance = this;
 
+            // Инициализация API клиента 
+            string serverUrl = "http://192.168.133.9:8000"; 
+            Api = new ApiClient(serverUrl);
+
             UserManager.CreateDefaultUserIfNeeded();
 
             MainContent.Visibility = Visibility.Collapsed;
@@ -120,7 +125,6 @@ namespace HealthSync
             SleepRadio.Checked += MetricRadio_Checked;
             CaloriesRadio.Checked += MetricRadio_Checked;
 
-            // Обновление погоды по кнопке
             RefreshWeatherButton.Click += RefreshWeather_Click;
         }
 
@@ -197,7 +201,6 @@ namespace HealthSync
                 UpdateMetricsGraph();
                 ApplyTheme(CurrentUser.Theme);
 
-                // Загружаем погоду
                 LoadWeather();
             }
         }
@@ -272,28 +275,30 @@ namespace HealthSync
             UpdateMetricsGraph();
         }
 
-        // Загрузка погоды
         public async void LoadWeather()
         {
             try
             {
-                var weather = await weatherService.GetWeatherAsync(); // без параметра
+                string city = CurrentUser?.City ?? "Moscow";
+                var weather = await Api.GetWeather(city);
 
-                WeatherTemp.Text = $"{weather.Temperature:F0}°C";
-                WeatherCondition.Text = weather.Condition;
-                WeatherRecommendation.Text = weather.Recommendation;
+                if (weather != null)
+                {
+                    WeatherTemp.Text = $"{weather.temperature:F0}°C";
+                    WeatherCondition.Text = weather.condition;
+                    WeatherRecommendation.Text = weather.recommendation;
 
-                // Иконка
-                if (weather.Temperature <= 0)
-                    WeatherIcon.Text = "❄️";
-                else if (weather.Temperature <= 10)
-                    WeatherIcon.Text = "🌬️";
-                else if (weather.Temperature <= 20)
-                    WeatherIcon.Text = "🌤️";
-                else if (weather.Temperature <= 30)
-                    WeatherIcon.Text = "☀️";
-                else
-                    WeatherIcon.Text = "🔥";
+                    if (weather.temperature <= 0)
+                        WeatherIcon.Text = "❄️";
+                    else if (weather.temperature <= 10)
+                        WeatherIcon.Text = "🌬️";
+                    else if (weather.temperature <= 20)
+                        WeatherIcon.Text = "🌤️";
+                    else if (weather.temperature <= 30)
+                        WeatherIcon.Text = "☀️";
+                    else
+                        WeatherIcon.Text = "🔥";
+                }
             }
             catch (Exception ex)
             {
@@ -473,7 +478,7 @@ namespace HealthSync
             }
         }
 
-        public void SaveCurrentUser()
+        public async void SaveCurrentUser()
         {
             if (CurrentUser != null)
             {
@@ -496,7 +501,22 @@ namespace HealthSync
 
                 SaveToHistory();
                 UserManager.UpdateUser(CurrentUser);
+
+                // Синхронизация с сервером
+                await SyncWithServer();
             }
+        }
+
+        private async Task SyncWithServer()
+        {
+            if (CurrentUser == null) return;
+
+            await Api.UpdateSteps(CurrentUser.Id, steps);
+            await Api.UpdateWater(CurrentUser.Id, water);
+            await Api.UpdateSleep(CurrentUser.Id, sleep);
+            await Api.UpdateVitals(CurrentUser.Id, heartRate, systolic, diastolic);
+            await Api.UpdateWeight(CurrentUser.Id, weight);
+            await Api.UpdateHeight(CurrentUser.Id, height);
         }
 
         private void SaveToHistory()
@@ -863,6 +883,7 @@ namespace HealthSync
             {
                 waterGoal = newGoal;
                 if (CurrentUser != null) CurrentUser.WaterGoal = newGoal;
+                await Api.UpdateGoals(CurrentUser.Id, null, waterGoal, null, null);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"💧 Цель по воде: {waterGoal:F1} л", "Успешно");
@@ -880,6 +901,7 @@ namespace HealthSync
             {
                 stepsGoal = newGoal;
                 if (CurrentUser != null) CurrentUser.StepsGoal = newGoal;
+                await Api.UpdateGoals(CurrentUser.Id, stepsGoal, null, null, null);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"👣 Цель по шагам: {stepsGoal:N0}", "Успешно");
@@ -897,6 +919,7 @@ namespace HealthSync
             {
                 sleepGoal = newGoal;
                 if (CurrentUser != null) CurrentUser.SleepGoal = newGoal;
+                await Api.UpdateGoals(CurrentUser.Id, null, null, sleepGoal, null);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"😴 Цель по сну: {sleepGoal:F1} ч", "Успешно");
@@ -914,6 +937,7 @@ namespace HealthSync
             {
                 caloriesGoal = newGoal;
                 if (CurrentUser != null) CurrentUser.CaloriesGoal = newGoal;
+                await Api.UpdateGoals(CurrentUser.Id, null, null, null, caloriesGoal);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"🔥 Цель по калориям: {caloriesGoal} ккал", "Успешно");
@@ -968,6 +992,7 @@ namespace HealthSync
             {
                 weight = newWeight;
                 if (CurrentUser != null) CurrentUser.Weight = newWeight;
+                await Api.UpdateWeight(CurrentUser.Id, weight);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"⚖️ Вес: {weight:F1} кг", "Успешно");
@@ -985,6 +1010,7 @@ namespace HealthSync
             {
                 height = newHeight;
                 if (CurrentUser != null) CurrentUser.Height = newHeight;
+                await Api.UpdateHeight(CurrentUser.Id, height);
                 UpdateUI();
                 LoadHistory();
                 ShowNotification($"📏 Рост: {height} см", "Успешно");
@@ -1014,6 +1040,9 @@ namespace HealthSync
                 }
                 syncCoins += 5;
                 if (CurrentUser != null) CurrentUser.SyncCoins = syncCoins;
+
+                await Api.UpdateVitals(CurrentUser.Id, heartRate, systolic, diastolic);
+
                 UpdateUI();
                 LoadHistory();
                 SaveToHistory();
@@ -1035,6 +1064,8 @@ namespace HealthSync
                 sleep = newSleep;
                 syncCoins += 3;
                 if (CurrentUser != null) CurrentUser.SyncCoins = syncCoins;
+
+                await Api.UpdateSleep(CurrentUser.Id, sleep);
 
                 if (CurrentUser != null && CurrentUser.SleepHistory.Count > 0)
                 {
@@ -1065,6 +1096,8 @@ namespace HealthSync
                 steps += 500;
                 calories += 30;
 
+                await Api.UpdateSteps(CurrentUser.Id, steps);
+
                 if (CurrentUser != null && CurrentUser.StepsHistory.Count > 0)
                 {
                     CurrentUser.StepsHistory[CurrentUser.StepsHistory.Count - 1] = steps;
@@ -1094,6 +1127,8 @@ namespace HealthSync
                 lastWater = water;
                 water += 0.25;
 
+                await Api.UpdateWater(CurrentUser.Id, water);
+
                 if (CurrentUser != null && CurrentUser.WaterHistory.Count > 0)
                 {
                     CurrentUser.WaterHistory[CurrentUser.WaterHistory.Count - 1] = water;
@@ -1122,6 +1157,8 @@ namespace HealthSync
             {
                 lastSleep = sleep;
                 sleep += 1;
+
+                await Api.UpdateSleep(CurrentUser.Id, sleep);
 
                 if (CurrentUser != null && CurrentUser.SleepHistory.Count > 0)
                 {
@@ -1180,6 +1217,8 @@ namespace HealthSync
                 lastSteps = steps;
                 steps = newValue;
 
+                await Api.UpdateSteps(CurrentUser.Id, steps);
+
                 if (CurrentUser != null && CurrentUser.StepsHistory.Count > 0)
                 {
                     CurrentUser.StepsHistory[CurrentUser.StepsHistory.Count - 1] = steps;
@@ -1208,6 +1247,8 @@ namespace HealthSync
                 lastWater = water;
                 water = newValue;
 
+                await Api.UpdateWater(CurrentUser.Id, water);
+
                 if (CurrentUser != null && CurrentUser.WaterHistory.Count > 0)
                 {
                     CurrentUser.WaterHistory[CurrentUser.WaterHistory.Count - 1] = water;
@@ -1235,6 +1276,8 @@ namespace HealthSync
             {
                 lastSleep = sleep;
                 sleep = newValue;
+
+                await Api.UpdateSleep(CurrentUser.Id, sleep);
 
                 if (CurrentUser != null && CurrentUser.SleepHistory.Count > 0)
                 {
@@ -1298,6 +1341,8 @@ namespace HealthSync
             steps = lastSteps;
             lastSteps = 0;
 
+            await Api.UpdateSteps(CurrentUser.Id, steps);
+
             if (CurrentUser != null && CurrentUser.StepsHistory.Count > 0)
             {
                 CurrentUser.StepsHistory[CurrentUser.StepsHistory.Count - 1] = steps;
@@ -1326,6 +1371,8 @@ namespace HealthSync
             water = lastWater;
             lastWater = 0;
 
+            await Api.UpdateWater(CurrentUser.Id, water);
+
             if (CurrentUser != null && CurrentUser.WaterHistory.Count > 0)
             {
                 CurrentUser.WaterHistory[CurrentUser.WaterHistory.Count - 1] = water;
@@ -1353,6 +1400,8 @@ namespace HealthSync
 
             sleep = lastSleep;
             lastSleep = 0;
+
+            await Api.UpdateSleep(CurrentUser.Id, sleep);
 
             if (CurrentUser != null && CurrentUser.SleepHistory.Count > 0)
             {

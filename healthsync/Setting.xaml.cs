@@ -21,22 +21,13 @@ namespace HealthSync
             var user = MainWindow.Instance.CurrentUser;
             if (user != null)
             {
-                // Цели
                 StepsGoalBox.Text = user.StepsGoal.ToString();
                 WaterGoalBox.Text = user.WaterGoal.ToString("F1");
                 SleepGoalBox.Text = user.SleepGoal.ToString("F1");
-
-                // Город для погоды
                 CityTextBox.Text = user.City ?? "Moscow";
-
-                // Уведомления
                 NotificationsCheckBox.IsChecked = user.NotificationsEnabled;
                 DailyReminderCheckBox.IsChecked = user.DailyReminder;
-
-                // Время напоминания
                 ReminderTimeBox.Text = user.ReminderTime;
-
-                // Автосинхронизация
                 AutoSyncCheckBox.IsChecked = user.AutoSync;
             }
         }
@@ -53,45 +44,30 @@ namespace HealthSync
                 return;
             }
 
-            // Сохраняем цели
             if (int.TryParse(StepsGoalBox.Text, out int stepsGoal) && stepsGoal > 0)
                 user.StepsGoal = stepsGoal;
-            else
-                MessageBox.Show("Некорректное значение для шагов!", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
 
             if (double.TryParse(WaterGoalBox.Text, out double waterGoal) && waterGoal > 0)
                 user.WaterGoal = waterGoal;
-            else
-                MessageBox.Show("Некорректное значение для воды!", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
 
             if (double.TryParse(SleepGoalBox.Text, out double sleepGoal) && sleepGoal > 0)
                 user.SleepGoal = sleepGoal;
-            else
-                MessageBox.Show("Некорректное значение для сна!", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
 
-            // Сохраняем город для погоды
             user.City = CityTextBox.Text.Trim();
             if (string.IsNullOrEmpty(user.City))
                 user.City = "Moscow";
 
-            // Сохраняем уведомления
             user.NotificationsEnabled = NotificationsCheckBox.IsChecked ?? false;
             user.DailyReminder = DailyReminderCheckBox.IsChecked ?? false;
             user.ReminderTime = ReminderTimeBox.Text;
-
-            // Сохраняем автосинхронизацию
             user.AutoSync = AutoSyncCheckBox.IsChecked ?? false;
 
-            // СОХРАНЯЕМ В ФАЙЛ
+            // Отправляем на сервер
+            await MainWindow.Api.UpdateSettings(user.Id, user.City, user.Theme, user.NotificationsEnabled, user.AutoSync, user.DailyReminder, user.ReminderTime);
+            await MainWindow.Api.UpdateGoals(user.Id, user.StepsGoal, user.WaterGoal, user.SleepGoal, user.CaloriesGoal);
+
             UserManager.UpdateUser(user);
-
-            // Обновляем погоду в главном окне
             MainWindow.Instance.LoadWeather();
-
-            // Обновляем UI в главном окне
             MainWindow.Instance.UpdateUI();
 
             MainWindow.Instance.ShowNotification("Настройки успешно сохранены!", "Успешно");
@@ -129,7 +105,6 @@ namespace HealthSync
 
             if (MainWindow.Instance.ShowConfirmation("Вы уверены, что хотите выйти?"))
             {
-                // Сохраняем данные текущего пользователя
                 var user = MainWindow.Instance.CurrentUser;
                 if (user != null)
                 {
@@ -150,12 +125,8 @@ namespace HealthSync
                     UserManager.UpdateUser(user);
                 }
 
-                // Очищаем текущего пользователя
                 MainWindow.Instance.CurrentUser = null;
-
-                // Переходим на страницу входа
                 MainWindow.Instance.NavigateToPage(new LoginPage());
-
                 MainWindow.Instance.ShowNotification("Вы вышли из аккаунта", "Информация");
             }
 
