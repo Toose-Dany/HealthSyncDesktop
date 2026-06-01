@@ -55,6 +55,8 @@ namespace HealthSync
             }
 
             string gender = (GenderBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (string.IsNullOrEmpty(gender))
+                gender = "Мужской";
 
             var (success, error) = await MainWindow.Api.Register(username, email, password, height, weight, age, gender);
 

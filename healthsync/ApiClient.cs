@@ -44,22 +44,18 @@ namespace HealthSync
         }
 
         public async Task<(bool success, string error)> Register(string username, string email, string password,
-            double height, double weight, int age, string gender)
+    double height, double weight, int age, string gender)
         {
             try
             {
-                var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
-
                 var registerData = new
                 {
                     email,
                     username,
                     password,
-                    full_name = username,
-                    date_of_birth = dateOfBirth,
-                    gender = gender == "Мужской" ? "male" : "female",
                     height,
                     weight,
+                    gender = gender == "Мужской" ? "male" : "female",
                     activity_level = "moderate"
                 };
 
@@ -179,6 +175,24 @@ namespace HealthSync
                     reminder_time = reminderTime
                 };
                 var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/settings", data);
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
+
+        public async Task<bool> UpdateProfile(int userId, string username, string email, int age, string gender)
+        {
+            try
+            {
+                var data = new
+                {
+                    user_id = userId,
+                    username = username,
+                    email = email,
+                    age = age,
+                    gender = gender
+                };
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/profile", data);
                 return response.IsSuccessStatusCode;
             }
             catch { return false; }

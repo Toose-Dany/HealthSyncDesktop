@@ -148,7 +148,7 @@ namespace HealthSync {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/healthsync;V1.0.0.0;component/setting.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/healthsync;component/setting.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\Setting.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
