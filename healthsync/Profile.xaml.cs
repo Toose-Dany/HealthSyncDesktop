@@ -26,13 +26,20 @@ namespace HealthSync
                 HeightBox.Text = user.Height.ToString();
                 WeightBox.Text = user.Weight.ToString();
 
-                // Устанавливаем пол в комбобоксе
-                if (user.Gender == "Мужской")
-                    GenderBox.SelectedIndex = 0;
-                else if (user.Gender == "Женский")
-                    GenderBox.SelectedIndex = 1;
+                // Устанавливаем пол в комбобоксе - ИСПРАВЛЕНО
+                if (!string.IsNullOrEmpty(user.Gender))
+                {
+                    if (user.Gender == "Мужской")
+                        GenderBox.SelectedIndex = 0;
+                    else if (user.Gender == "Женский")
+                        GenderBox.SelectedIndex = 1;
+                    else
+                        GenderBox.SelectedIndex = 0; // значение по умолчанию
+                }
                 else
-                    GenderBox.SelectedIndex = 0;
+                {
+                    GenderBox.SelectedIndex = 0; // если null, ставим Мужской
+                }
             }
         }
 
@@ -48,7 +55,7 @@ namespace HealthSync
                 return;
             }
 
-            // 1. Сохраняем имя пользователя
+            // Сохраняем имя пользователя
             if (!string.IsNullOrWhiteSpace(UsernameBox.Text))
                 user.Username = UsernameBox.Text.Trim();
             else
@@ -58,7 +65,7 @@ namespace HealthSync
                 return;
             }
 
-            // 2. Сохраняем email
+            // Сохраняем email
             string newEmail = EmailBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(newEmail))
             {
@@ -75,18 +82,22 @@ namespace HealthSync
             }
             user.Email = newEmail;
 
-            // 3. Сохраняем пол (ГЛАВНОЕ - ЗАПОМИНАЕМ ВЫБРАННОЕ ЗНАЧЕНИЕ)
-            string selectedGender = "Мужской";
+            // Сохраняем пол - ИСПРАВЛЕНО
+            string selectedGender = "Мужской"; // значение по умолчанию
             if (GenderBox.SelectedItem != null)
             {
                 var selectedGenderItem = GenderBox.SelectedItem as ComboBoxItem;
-                if (selectedGenderItem != null)
+                if (selectedGenderItem != null && selectedGenderItem.Content != null)
                 {
                     selectedGender = selectedGenderItem.Content.ToString();
                 }
             }
 
-            // 4. Сохраняем возраст
+            // Проверяем, что пол не пустой
+            if (string.IsNullOrEmpty(selectedGender))
+                selectedGender = "Мужской";
+
+            // Сохраняем возраст
             if (int.TryParse(AgeBox.Text, out int age) && age >= 10 && age <= 120)
                 user.Age = age;
             else
@@ -96,7 +107,7 @@ namespace HealthSync
                 return;
             }
 
-            // 5. Сохраняем рост
+            // Сохраняем рост
             if (double.TryParse(HeightBox.Text, out double height) && height >= 100 && height <= 250)
             {
                 user.Height = height;
@@ -109,7 +120,7 @@ namespace HealthSync
                 return;
             }
 
-            // 6. Сохраняем вес
+            // Сохраняем вес
             if (double.TryParse(WeightBox.Text, out double weight) && weight >= 20 && weight <= 300)
             {
                 user.Weight = weight;
@@ -122,24 +133,19 @@ namespace HealthSync
                 return;
             }
 
-            // 7. ОТПРАВЛЯЕМ НА СЕРВЕР
+            // Отправляем на сервер
             try
             {
+                // Конвертируем пол для API (Мужской -> male, Женский -> female)
                 string genderForApi = selectedGender == "Мужской" ? "male" : "female";
                 bool success = await MainWindow.Api.UpdateProfile(user.Id, user.Username, user.Email, user.Age, genderForApi);
 
                 if (success)
                 {
-                    // 8. ВАЖНО! Обновляем пол у локального пользователя
-                    user.Gender = selectedGender;
-
-                    // 9. Сохраняем локально
+                    user.Gender = selectedGender; // Сохраняем отображаемое значение (Мужской/Женский)
                     UserManager.UpdateUser(user);
-
-                    // 10. Обновляем интерфейс главного окна
                     MainWindow.Instance.LoadUserData();
                     MainWindow.Instance.UpdateUI();
-
                     MainWindow.Instance.ShowNotification("Профиль успешно обновлен!", "Успешно");
                 }
                 else

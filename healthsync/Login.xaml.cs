@@ -27,7 +27,14 @@ namespace HealthSync
 
             if (success && apiUser != null)
             {
+                // Отладочный вывод
+                System.Diagnostics.Debug.WriteLine($"Пол от сервера: '{apiUser.gender}'");
+
                 var user = ConvertToLocalUser(apiUser);
+
+                // Отладочный вывод
+                System.Diagnostics.Debug.WriteLine($"Пол после конвертации: '{user.Gender}'");
+
                 MainWindow.Instance.CurrentUser = user;
                 MainWindow.Instance.LoadUserData();
                 MainWindow.Instance.ShowMainContent();
@@ -48,6 +55,19 @@ namespace HealthSync
 
         private User ConvertToLocalUser(UserApiModel apiUser)
         {
+            // Конвертация пола из male/female в Мужской/Женский
+            string genderDisplay = "Мужской"; // значение по умолчанию
+
+            if (!string.IsNullOrEmpty(apiUser.gender))
+            {
+                if (apiUser.gender.ToLower() == "male")
+                    genderDisplay = "Мужской";
+                else if (apiUser.gender.ToLower() == "female")
+                    genderDisplay = "Женский";
+                else
+                    genderDisplay = apiUser.gender; // если пришло уже в правильном формате
+            }
+
             return new User
             {
                 Id = apiUser.id,
@@ -69,7 +89,7 @@ namespace HealthSync
                 CaloriesGoal = apiUser.calories_goal,
                 City = apiUser.city ?? "Moscow",
                 Theme = apiUser.theme ?? "Light",
-                Gender = apiUser.gender == "male" ? "Мужской" : "Женский",
+                Gender = genderDisplay,
                 NotificationsEnabled = apiUser.notifications_enabled,
                 AutoSync = apiUser.auto_sync,
                 DailyReminder = apiUser.daily_reminder,

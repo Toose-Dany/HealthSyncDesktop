@@ -63,7 +63,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="Город для погоды:" VerticalAlignment="Center"/>
-                    <TextBox x:Name="CityTextBox" Grid.Column="1" Padding="8" Margin="10,0" Text="Moscow"/>
+                    <TextBox x:Name="CityTextBox" Grid.Column="1" Padding="8" Margin="10,0" Text="Tver"/>
                     <TextBlock Grid.Column="2" Text="(на англ.)" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="10" Foreground="#666"/>
                 </Grid>
 

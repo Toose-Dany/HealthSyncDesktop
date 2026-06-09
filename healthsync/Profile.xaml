@@ -21,7 +21,7 @@
                 <TextBox x:Name="AgeBox" Padding="10" Background="#F5F5F5"/>
 
                 <TextBlock Text="Пол:" Margin="0,10,0,5"/>
-                <ComboBox x:Name="GenderBox" Padding="10" Background="#F5F5F5">
+                <ComboBox x:Name="GenderBox" Padding="10" Background="#F5F5F5" SelectedIndex="0">
                     <ComboBoxItem Content="Мужской"/>
                     <ComboBoxItem Content="Женский"/>
                 </ComboBox>

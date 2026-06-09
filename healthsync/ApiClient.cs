@@ -44,7 +44,7 @@ namespace HealthSync
         }
 
         public async Task<(bool success, string error)> Register(string username, string email, string password,
-    double height, double weight, int age, string gender)
+            double height, double weight, int age, string gender)
         {
             try
             {
@@ -55,6 +55,7 @@ namespace HealthSync
                     password,
                     height,
                     weight,
+                    age,
                     gender = gender == "Мужской" ? "male" : "female",
                     activity_level = "moderate"
                 };
@@ -184,13 +185,16 @@ namespace HealthSync
         {
             try
             {
+                // Конвертируем пол для API (Мужской -> male, Женский -> female)
+                string genderForApi = gender == "Мужской" ? "male" : "female";
+
                 var data = new
                 {
                     user_id = userId,
                     username = username,
                     email = email,
                     age = age,
-                    gender = gender
+                    gender = genderForApi
                 };
                 var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/profile", data);
                 return response.IsSuccessStatusCode;
@@ -276,7 +280,7 @@ namespace HealthSync
         public int calories_goal { get; set; }
         public string city { get; set; }
         public string theme { get; set; }
-        public string gender { get; set; }
+        public string gender { get; set; }  // Пол от сервера (male/female)
         public bool notifications_enabled { get; set; }
         public bool auto_sync { get; set; }
         public bool daily_reminder { get; set; }
